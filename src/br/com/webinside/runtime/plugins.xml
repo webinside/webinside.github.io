@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<REGISTER>
+  <NAMESPACE>Namespace utilizado para armazenar os Ids de Plugin</NAMESPACE>
+  <FUNCTIONS>
+    <FUNCTION ID="Nome da função" CLASS="Classe da função"/>		
+  </FUNCTIONS>
+  <PLUGINS>
+    <PLUGIN PID="Id único do plugin">
+  	  <TITLE>Título do Plugin</TITLE>
+  	  <CLASS>Nome da Classe</CLASS>
+	  <TYPE>CONNECTOR|JAVAGRID</TYPE>
+  	  <USEDIN>PRE|POS</USEDIN>
+  	  <PARAMETERS>
+        <IN>
+          <PARAMETER ID="Variável">
+  			<DESCRIPTION>Descrição</DESCRIPTION>
+  			<HINT>Texto do hint</HINT>
+  		    <VALUE>Valor a ser atribuido</VALUE>
+  		  </PARAMETER>
+  		</IN>
+  		<OUT>
+  		  <PARAMETER ID="Variável">
+  		    <DESCRIPTION>Descrição</DESCRIPTION>
+  	      </PARAMETER>
+        </OUT>
+  	  </PARAMETERS>
+    </PLUGIN>
+  </PLUGINS>
+</REGISTER>
+

@@ -1,0 +1,45 @@
+/*
+ * WEBINSIDE - Ferramenta de produtividade Java
+ * Copyright (c) 2011-2012 LINEWEB Soluções Tecnológicas Ltda.
+ * Copyright (c) 2009-2010 Incógnita Inteligência Digital Ltda.
+ *
+ * Este programa é software livre; você pode redistribuí-lo e/ou modificá-lo 
+ * sob os termos da GNU LESSER GENERAL PUBLIC LICENSE (LGPL) conforme publicada 
+ * pela Free Software Foundation; versão 2.1 da Licença.
+ * Este programa é distribuído na expectativa de que seja útil, porém, SEM 
+ * NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU 
+ * ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA.
+ * 
+ * Consulte a GNU LGPL para mais detalhes.
+ * Você deve ter recebido uma cópia da GNU LGPL junto com este programa; se não, 
+ * veja em http://www.gnu.org/licenses/ 
+ */
+
+package br.com.webinside.runtime.integration;
+
+import br.com.webinside.runtime.core.*;
+import br.com.webinside.runtime.exception.UserException;
+
+/**
+ * DOCUMENT ME!
+ *
+ * @author $author$
+ * @version $Revision: 1.1 $
+ */
+public interface InterfaceConnector {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param wiParams DOCUMENT ME!
+     *
+     * @throws Exception DOCUMENT ME!
+     */
+    public void execute(ExecuteParams wiParams) throws UserException;
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public boolean exit();
+}

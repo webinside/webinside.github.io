@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<DRIVERS>
+	<JDBCS>
+		<SHOWONLYFOUNDS>OFF</SHOWONLYFOUNDS>
+		<!-- Atributos do Elemento JDBC: DISABLED="ON" -->
+		<!-- Atributos do Elemento CLASS: TYPE="NEWINSTANCE",TYPE="USEINSTANCE",TYPE="REGISTERDRIVER" -->
+		<!-- Variaveis de url: |alias|,|root_alias|,|oracle_alias|,|sqlserver_alias| -->
+		<ALIASES>	
+			<JDBC ID="Cache">
+				<DESCRIPTION>Caché</DESCRIPTION>	
+				<CLASS TYPE="USEINSTANCE">com.intersys.jdbc.CacheDriver</CLASS>
+				<URL>jdbc:Cache:|alias|</URL>
+				<TEMPLATE>//[host]:1972/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1 as cod from dual</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="Cassandra">
+				<DESCRIPTION>Cassandra</DESCRIPTION>	
+				<CLASS>org.apache.cassandra.cql.jdbc.CassandraDriver</CLASS>
+				<URL>jdbc:cassandra:|alias|</URL>
+				<TEMPLATE>//[host]:9170/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="DB2">
+				<DESCRIPTION>DB2</DESCRIPTION>
+				<CLASS>com.ibm.db2.jcc.DB2Driver</CLASS>
+				<URL>jdbc:db2:|alias|</URL>	
+				<TEMPLATE>//[host]:[port]/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="Derby">
+				<DESCRIPTION>Derby</DESCRIPTION>
+				<CLASS>org.apache.derby.jdbc.ClientDriver</CLASS>
+				<URL>jdbc:derby:|alias|</URL>	
+				<TEMPLATE>//[host]:1527/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="DerbyEmbedded">
+				<DESCRIPTION>Derby Embedded</DESCRIPTION>
+				<CLASS>org.apache.derby.jdbc.EmbeddedDriver</CLASS>
+				<URL>jdbc:derby:|alias|</URL>	
+				<TEMPLATE>[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="H2Database">
+				<DESCRIPTION>H2 Database</DESCRIPTION>
+				<CLASS>org.h2.Driver</CLASS>
+				<URL>jdbc:h2:|alias|</URL>	
+				<TEMPLATE>file:[db];auto_server=true</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="Notes">
+				<DESCRIPTION>IBM Lotus Domino/Notes</DESCRIPTION>
+				<CLASS>lotus.jdbc.domino.DominoDriver</CLASS>
+				<URL>jdbc:domino:/|alias|</URL>
+				<TEMPLATE>[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="Firebird">
+				<DESCRIPTION>Firebird</DESCRIPTION>	
+				<CLASS>org.firebirdsql.jdbc.FBDriver</CLASS>
+				<URL>jdbc:firebirdsql:|alias|</URL>
+				<TEMPLATE>[host]:[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1 from rdb$database</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="Ingres">
+				<DESCRIPTION>Ingres</DESCRIPTION>	
+				<CLASS>ca.ingres.jdbc.IngresDriver</CLASS>
+				<URL>jdbc:ingres:|alias|</URL>
+				<TEMPLATE>//[host]:II7/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="Informix">
+				<DESCRIPTION>Informix</DESCRIPTION>	
+				<CLASS>com.informix.jdbc.IfxDriver</CLASS>
+				<URL>jdbc:informix-sqli:|alias|</URL>
+				<TEMPLATE>//[host]:1533/[db]:informixserver=server</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="Interbase">
+				<DESCRIPTION>Interbase</DESCRIPTION>	
+				<CLASS TYPE="REGISTERDRIVER">interbase.interclient.Driver</CLASS>
+				<URL>jdbc:interbase:|alias|</URL>
+				<TEMPLATE>//[host]/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="LDAP">
+				<DESCRIPTION>LDAP Bridge</DESCRIPTION>	
+				<CLASS>com.octetstring.jdbcLdap.sql.JdbcLdapDriver</CLASS>
+				<URL>jdbc:ldap:|alias|</URL>
+				<TEMPLATE>//[host]:389/[db]</TEMPLATE>
+			</JDBC>
+			<JDBC ID="MysqlJC">
+				<DESCRIPTION>Mysql JConnector</DESCRIPTION>	
+				<CLASS TYPE="NEWINSTANCE">com.mysql.jdbc.Driver</CLASS>
+				<URL>jdbc:mysql:|alias|</URL>
+				<TEMPLATE>//[host]/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="Oracle">
+				<DESCRIPTION>Oracle</DESCRIPTION>	
+				<CLASS TYPE="REGISTERDRIVER">oracle.jdbc.driver.OracleDriver</CLASS>
+				<URL>jdbc:oracle:thin:|oracle_alias|</URL>	
+				<TEMPLATE>//[host]/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1 from dual</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="OracleXE">
+				<DESCRIPTION>Oracle XE</DESCRIPTION>	
+				<CLASS TYPE="REGISTERDRIVER">oracle.jdbc.driver.OracleDriver</CLASS>
+				<URL>jdbc:oracle:thin:|alias|</URL>	
+				<TEMPLATE>@//[host]:1521/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1 from dual</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="OracleOCI">
+				<DESCRIPTION>Oracle OCI</DESCRIPTION>	
+				<CLASS TYPE="REGISTERDRIVER">oracle.jdbc.driver.OracleDriver</CLASS>
+				<URL>jdbc:oracle:oci:|alias|</URL>	
+				<TEMPLATE>@//[host]:5521/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1 from dual</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="PostgreSql">
+				<DESCRIPTION>PostgreSql</DESCRIPTION>	
+				<CLASS>org.postgresql.Driver</CLASS>
+				<URL>jdbc:postgresql:|alias|</URL>
+				<TEMPLATE>//[host]/[db]?charSet=LATIN1&amp;lang=pt_BR</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="Progress">
+				<DESCRIPTION>Progress 9.x</DESCRIPTION>	
+				<CLASS>com.progress.sql.jdbc.JdbcProgressDriver</CLASS>
+				<URL>jdbc:progress:|alias|</URL>
+				<TEMPLATE>//[host]/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="Progress10">
+				<DESCRIPTION>Progress 10.x</DESCRIPTION>	
+				<CLASS>com.ddtek.jdbc.openedge.OpenEdgeDriver</CLASS>
+				<URL>jdbc:datadirect:openedge:|alias|</URL>
+				<TEMPLATE>//[host];databasename=[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="SapDB">
+				<DESCRIPTION>SapDB</DESCRIPTION>	
+				<CLASS>com.sap.dbtech.jdbc.DriverSapDB</CLASS>
+				<URL>jdbc:sapdb:|alias|</URL>
+				<TEMPLATE>//[host]/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="Sequoia">
+				<DESCRIPTION>Sequoia Server</DESCRIPTION>	
+				<CLASS>org.continuent.sequoia.driver.Driver</CLASS>
+				<URL>jdbc:sequoia:|alias|</URL>
+				<TEMPLATE>//[host]:25322/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1 as cod from dual</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="SqlServer">
+				<DESCRIPTION>SqlServer</DESCRIPTION>	
+				<CLASS>net.sourceforge.jtds.jdbc.Driver</CLASS>
+				<URL>jdbc:jtds:sqlserver:|alias|</URL>	
+				<TEMPLATE>//[host]/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="SqlServer2000">
+				<DESCRIPTION>SqlServer 2000</DESCRIPTION>	
+				<CLASS>com.microsoft.jdbc.sqlserver.SQLServerDriver</CLASS>
+				<URL>jdbc:microsoft:sqlserver:|sqlserver_alias|</URL>	
+				<TEMPLATE>//[host];databasename=[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="SqlServer2005">
+				<DESCRIPTION>SqlServer 2005-2008</DESCRIPTION>	
+				<CLASS>com.microsoft.sqlserver.jdbc.SQLServerDriver</CLASS>
+				<URL>jdbc:sqlserver:|sqlserver_alias|</URL>	
+				<TEMPLATE>//[host];databasename=[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="Sybase">
+				<DESCRIPTION>Sybase</DESCRIPTION>	
+				<CLASS TYPE="NEWINSTANCE">com.sybase.jdbc2.jdbc.SybDriver</CLASS>
+				<URL>jdbc:sybase:Tds:|alias|</URL>	
+				<TEMPLATE>[host]/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+				<PREPAREDSTATEMENT>FALSE</PREPAREDSTATEMENT>
+			</JDBC>
+			<JDBC ID="SybaseINET">
+				<DESCRIPTION>Sybase InetSoftware</DESCRIPTION>	
+				<CLASS TYPE="NEWINSTANCE">com.inet.syb.SybDriver</CLASS>
+				<URL>jdbc:inetsyb:|root_alias|</URL>	
+				<TEMPLATE>//[host]?database=[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
+			</JDBC>
+    </ALIASES> 
+  </JDBCS>
+</DRIVERS>

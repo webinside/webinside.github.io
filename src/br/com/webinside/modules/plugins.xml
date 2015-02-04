@@ -1,0 +1,717 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<REGISTER>
+  <NAMESPACE>webinside.com.br</NAMESPACE>
+  <PLUGINS>
+    <!-- definição do plug-in SingleSignOn -->
+    <PLUGIN PID="SingleSignOn">
+      <TITLE>Atribuir SingleSignOn</TITLE>
+      <CLASS>br.com.webinside.runtime.function.SingleSignOnConnector</CLASS>
+      <TYPE>CONNECTOR</TYPE>
+      <PARAMETERS>
+        <IN>
+          <PARAMETER ID="tmp.exportObjs">
+            <DESCRIPTION>Exportar objetos</DESCRIPTION>
+            <HINT>Exportar objetos</HINT>
+            <VALUE>|tmp.exportObjs|</VALUE>
+          </PARAMETER>
+        </IN>
+      </PARAMETERS>
+    </PLUGIN>
+    <!-- definição do plug-in SqlToCSV -->
+    <PLUGIN PID="SqlToCSV">
+      <TITLE>Gerar CSV de consulta SQL</TITLE>
+      <CLASS>br.com.webinside.runtime.function.SqlToCSV</CLASS>
+      <TYPE>CONNECTOR</TYPE>
+      <USEDIN>PRE</USEDIN>	
+      <PARAMETERS>
+        <IN>
+          <PARAMETER ID="tmp.sqltocsv.database">
+            <DESCRIPTION>BD (principal)</DESCRIPTION>
+            <VALUE>|tmp.sqltocsv.database|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.sqltocsv.queryvar">
+            <DESCRIPTION>Variável do SQL</DESCRIPTION>
+            <VALUE>|tmp.sqltocsv.queryvar|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.sqltocsv.name">
+            <DESCRIPTION>Nome do CSV (dados)</DESCRIPTION>
+            <VALUE>|tmp.sqltocsv.name|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.sqltocsv.format">
+            <DESCRIPTION>Formato (BR ou US)</DESCRIPTION>
+            <VALUE>|tmp.sqltocsv.format|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.sqltocsv.label_utf8">
+            <DESCRIPTION>Label UTF8</DESCRIPTION>
+            <VALUE>|tmp.sqltocsv.label_utf8|</VALUE>
+          </PARAMETER>
+        </IN>
+      </PARAMETERS>
+    </PLUGIN>
+    <!-- definição do plug-in Persist -->
+    <PLUGIN PID="DatabasePersist">
+      <TITLE>Persistência Automática</TITLE>
+      <CLASS>br.com.webinside.runtime.function.database.Persist</CLASS>
+      <TYPE>CONNECTOR</TYPE>
+      <PARAMETERS>
+        <IN>
+          <PARAMETER ID="tmp.persist.database">
+            <DESCRIPTION>BD (principal)</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.database|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.table">
+            <DESCRIPTION>Tabela</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.table|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.object">
+            <DESCRIPTION>Variável Objeto</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.object|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.resp">
+            <DESCRIPTION>Variável Resposta</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.resp|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.msg.insert">
+            <DESCRIPTION>Inserção OK</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.msg.insert|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.msg.update">
+            <DESCRIPTION>Atualização OK</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.msg.update|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.target_var">
+            <DESCRIPTION>Variável Destino do ID</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.target_var|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.debug">
+            <DESCRIPTION>Ativar o modo debug</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.debug|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.reset">
+            <DESCRIPTION>Resetar tabelas</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.reset|</VALUE>
+          </PARAMETER>
+        </IN>
+      </PARAMETERS>
+    </PLUGIN>
+    <!-- definição do plug-in Persist da Lineweb -->
+    <PLUGIN PID="DatabasePersistLineweb">
+      <TITLE>Persistência Automática</TITLE>
+      <CLASS>br.com.webinside.runtime.lw.sql.Persist</CLASS>
+      <TYPE>CONNECTOR</TYPE>
+      <PARAMETERS>
+        <IN>
+          <PARAMETER ID="tmp.persist.database">
+            <DESCRIPTION>BD (principal)</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.database|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.table">
+            <DESCRIPTION>Tabela</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.table|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.object">
+            <DESCRIPTION>Variável Objeto</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.object|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.resp">
+            <DESCRIPTION>Variável Resposta</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.resp|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.msg.insert">
+            <DESCRIPTION>Inserção OK</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.msg.insert|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.msg.update">
+            <DESCRIPTION>Atualização OK</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.msg.update|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.target_var">
+            <DESCRIPTION>Variável Destino do ID</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.target_var|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.textual_cols">
+            <DESCRIPTION>Colunas de Busca Textual</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.debug|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.debug">
+            <DESCRIPTION>Ativar o modo debug</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.debug|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.persist.reset">
+            <DESCRIPTION>Resetar tabelas</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.persist.reset|</VALUE>
+          </PARAMETER>
+        </IN>
+      </PARAMETERS>
+    </PLUGIN>
+    <!-- definição do plug-in do gráfico em fatias -->
+    <PLUGIN PID="PieChart">
+      <TITLE>Gráfico em fatias</TITLE>
+      <CLASS>br.com.webinside.modules.chart.PieChart</CLASS>
+      <TYPE>CONNECTOR</TYPE>
+      <USEDIN>PRE</USEDIN>	
+      <PARAMETERS>
+        <IN>
+	  <!-- parâmetros de entrada comum a todos os gráficos -->
+          <PARAMETER ID="tmp.chart.title">
+            <DESCRIPTION>Título do gráfico</DESCRIPTION>
+            <HINT>Título do gráfico</HINT>
+            <VALUE>|tmp.chart.title|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.width">
+            <DESCRIPTION>Largura</DESCRIPTION>
+            <HINT>Largura em pixels da imagem a ser gerada</HINT>
+            <VALUE>|tmp.chart.width|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.height">
+            <DESCRIPTION>Altura</DESCRIPTION>
+            <HINT>Altura em pixels da imagem a ser gerada</HINT>
+            <VALUE>|tmp.chart.height|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.draw3d">
+            <DESCRIPTION>3D</DESCRIPTION>
+            <HINT>Indica se o gráfico será desenhado em perspectiva 3D. Os valores possíveis são true ou false.</HINT>
+            <VALUE>|tmp.chart.draw3d|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.plot.foregroundAlpha">
+            <DESCRIPTION>Nível de transparência</DESCRIPTION>
+            <HINT>Indica o nível de transparência da imagem do gráfico a ser gerado. O valor deve ser um número compreendido entre 0.0f a 1.0f, inclusives. Quanto maior o valor menor o nível de transparência.</HINT>
+            <VALUE>|tmp.chart.plot.foregroundAlpha|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.dataset.objectId">
+            <DESCRIPTION>Objeto (dataset)</DESCRIPTION>
+            <HINT>Indica o identificador do objeto que servirá como fonte de dados para popular o dataset usado pelo gráfico.</HINT>
+            <VALUE>|tmp.chart.dataset.objectId|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.backgroundColor">
+            <DESCRIPTION>Cor de fundo da imagem &lt;a href="#" onclick="colorWindow('jParam.tmp.chart.backgroundColor'); return false;"&gt;&lt;img border="0" src="images/icons/paleta2.jpg"&gt;&lt;/a&gt;</DESCRIPTION>
+            <HINT>Indica o identificador do objeto que servirá como fonte de dados para popular o dataset usado pelo gráfico.</HINT>
+            <VALUE>|tmp.chart.backgroundColor|</VALUE>
+          </PARAMETER>
+		  <!-- parâmetros de entrada específico do gráfico em fatias -->
+          <PARAMETER ID="tmp.chart.pie.sectionLabelType">
+            <DESCRIPTION>Modo de exibição dos rótulos das seções</DESCRIPTION>
+            <HINT>no (default): não exibe nenhum tipo de rótulo. all: exibe todos os dados. name: exibe apenas os nomes das seções. value: exibe apenas os valores das seções. percent: exibe apenas as porcentagens ocupadas pelas seções. name_and_value: exibe os nomes das seções e os valores entre parêntesis. name_and_percent: exibe os nomes das seções e as porcentagens entre parêntesis. value_and_percent: exibr os valores das seções e as porcentagens entre parêntesis.</HINT>
+            <VALUE>|tmp.chart.pie.sectionLabelType|</VALUE>
+          </PARAMETER>
+        </IN>
+        <OUT>
+          <PARAMETER ID="tmp.chart.error">
+            <DESCRIPTION>Variável que conterá o stack trace se ocorrer algum erro durante a geração do gráfico.</DESCRIPTION>
+          </PARAMETER>
+        </OUT>
+      </PARAMETERS>
+    </PLUGIN>
+	<!-- definição do plug-in do gráfico em barras -->
+    <PLUGIN PID="BarChart">
+      <TITLE>Gráfico em barras</TITLE>
+      <CLASS>br.com.webinside.modules.chart.BarChart</CLASS>
+      <TYPE>CONNECTOR</TYPE>
+      <USEDIN>PRE</USEDIN>	
+      <PARAMETERS>
+        <IN>
+	  <!-- parâmetros de entrada comum a todos os gráficos -->
+          <PARAMETER ID="tmp.chart.title">
+            <DESCRIPTION>Título do gráfico</DESCRIPTION>
+            <HINT>Título do gráfico</HINT>
+            <VALUE>|tmp.chart.title|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.width">
+            <DESCRIPTION>Largura</DESCRIPTION>
+            <HINT>Largura em pixels da imagem a ser gerada</HINT>
+            <VALUE>|tmp.chart.width|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.height">
+            <DESCRIPTION>Altura</DESCRIPTION>
+            <HINT>Altura em pixels da imagem a ser gerada</HINT>
+            <VALUE>|tmp.chart.height|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.draw3d">
+            <DESCRIPTION>3D</DESCRIPTION>
+            <HINT>Indica se o gráfico será desenhado em perspectiva 3D. Os valores possíveis são true ou false.</HINT>
+            <VALUE>|tmp.chart.draw3d|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.plot.foregroundAlpha">
+            <DESCRIPTION>Nível de transparência</DESCRIPTION>
+            <HINT>Indica o nível de transparência da imagem do gráfico a ser gerado. O valor deve ser um número compreendido entre 0.0f a 1.0f, inclusives. Quanto maior o valor menor o nível de transparência.</HINT>
+            <VALUE>|tmp.chart.plot.foregroundAlpha|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.dataset.objectId">
+            <DESCRIPTION>Objeto (dataset)</DESCRIPTION>
+            <HINT>Indica o identificador do objeto que servirá como fonte de dados para popular o dataset usado pelo gráfico.</HINT>
+            <VALUE>|tmp.chart.dataset.objectId|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.backgroundColor">
+            <DESCRIPTION>Cor de fundo da imagem &lt;a href="#" onclick="colorWindow('jParam.tmp.chart.bakgroundColor'); return false;"&gt;&lt;img border="0" src="images/icons/paleta2.jpg"&gt;&lt;/a&gt;</DESCRIPTION>
+            <HINT>Indica o identificador do objeto que servirá como fonte de dados para popular o dataset usado pelo gráfico.</HINT>
+            <VALUE>|tmp.chart.backgroundColor|</VALUE>
+          </PARAMETER>
+		  <!-- parâmetros de entrada específico para gráficos que usam CategoryDataset -->
+          <PARAMETER ID="tmp.chart.xlabel">
+            <DESCRIPTION>Rótulo do eixo x</DESCRIPTION>
+            <HINT>Rótulo do eixo x</HINT>
+            <VALUE>|tmp.chart.xlabel|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.ylabel">
+            <DESCRIPTION>Rótulo do eixo y</DESCRIPTION>
+            <HINT>Rótulo do eixo y</HINT>
+            <VALUE>|tmp.chart.ylabel|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.categoryDatasetDisposition">
+            <DESCRIPTION>Disposição dos dados das categorias no objeto</DESCRIPTION>
+            <HINT>line (default): os dados das séries de uma categoria estão numa única linha do objeto. column: os dados das séries das categorias estão nas colunas.</HINT>
+            <VALUE>|tmp.chart.categoryDatasetDisposition|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.plotOrientation">
+            <DESCRIPTION>Orientação do plot</DESCRIPTION>
+            <HINT>Indica a orientação que será seguida para desenhar o gráfico. Os valores possíveis são: vertical (default) ou horizontal.</HINT>
+            <VALUE>|tmp.chart.plotOrientation|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.categoryLabelUp45">
+            <DESCRIPTION>Rótulo das séries na diagonal</DESCRIPTION>
+            <HINT>Indica se o rótulo das séries deve ficar na diagonal, o valor default é false.</HINT>
+            <VALUE>|tmp.chart.categoryLabelUp45|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.tickLabelSize">
+            <DESCRIPTION>Tamanho da fonte das séries</DESCRIPTION>
+            <HINT>Indica o tamanho da fonte a ser usado nas séries, o valor padrão é o default do JFreeChart</HINT>
+            <VALUE>|tmp.chart.tickLabelSize|</VALUE>
+          </PARAMETER>
+		  <!-- parâmetros de entrada específico do gráfico em barras -->
+          <PARAMETER ID="tmp.barchart.stacked">
+            <DESCRIPTION>Empilhar barras</DESCRIPTION>
+            <HINT>Indica se as barras devem ser empilhadas, os valores possíveis são true ou false sendo false o valor default.</HINT>
+            <VALUE>|tmp.barchart.stacked|</VALUE>
+          </PARAMETER>
+        </IN>
+        <OUT>
+          <PARAMETER ID="tmp.chart.error">
+            <DESCRIPTION>Variável que conterá o stack trace se ocorrer algum erro durante a geração do gráfico.</DESCRIPTION>
+          </PARAMETER>
+        </OUT>
+      </PARAMETERS>
+    </PLUGIN>
+	<!-- definição do plug-in do gráfico em linhas -->
+    <PLUGIN PID="LineChart">
+      <TITLE>Gráfico em linhas</TITLE>
+      <CLASS>br.com.webinside.modules.chart.LineChart</CLASS>
+      <TYPE>CONNECTOR</TYPE>
+      <USEDIN>PRE</USEDIN>	
+      <PARAMETERS>
+        <IN>
+	  <!-- parâmetros de entrada comum a todos os gráficos -->
+          <PARAMETER ID="tmp.chart.title">
+            <DESCRIPTION>Título do gráfico</DESCRIPTION>
+            <HINT>Título do gráfico</HINT>
+            <VALUE>|tmp.chart.title|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.width">
+            <DESCRIPTION>Largura</DESCRIPTION>
+            <HINT>Largura em pixels da imagem a ser gerada</HINT>
+            <VALUE>|tmp.chart.width|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.height">
+            <DESCRIPTION>Altura</DESCRIPTION>
+            <HINT>Altura em pixels da imagem a ser gerada</HINT>
+            <VALUE>|tmp.chart.height|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.draw3d">
+            <DESCRIPTION>3D</DESCRIPTION>
+            <HINT>Indica se o gráfico será desenhado em perspectiva 3D. Os valores possíveis são true ou false.</HINT>
+            <VALUE>|tmp.chart.draw3d|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.plot.foregroundAlpha">
+            <DESCRIPTION>Nível de transparência</DESCRIPTION>
+            <HINT>Indica o nível de transparência da imagem do gráfico a ser gerado. O valor deve ser um número compreendido entre 0.0f a 1.0f, inclusives. Quanto maior o valor menor o nível de transparência.</HINT>
+            <VALUE>|tmp.chart.plot.foregroundAlpha|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.dataset.objectId">
+            <DESCRIPTION>Objeto (dataset)</DESCRIPTION>
+            <HINT>Indica o identificador do objeto que servirá como fonte de dados para popular o dataset usado pelo gráfico.</HINT>
+            <VALUE>|tmp.chart.dataset.objectId|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.backgroundColor">
+            <DESCRIPTION>Cor de fundo da imagem &lt;a href="#" onclick="colorWindow('jParam.tmp.chart.bakgroundColor'); return false;"&gt;&lt;img border="0" src="images/icons/paleta2.jpg"&gt;&lt;/a&gt;</DESCRIPTION>
+            <HINT>Indica o identificador do objeto que servirá como fonte de dados para popular o dataset usado pelo gráfico.</HINT>
+            <VALUE>|tmp.chart.backgroundColor|</VALUE>
+          </PARAMETER>
+		  <!-- parâmetros de entrada específico para gráficos que usam CategoryDataset -->
+          <PARAMETER ID="tmp.chart.xlabel">
+            <DESCRIPTION>Rótulo do eixo x</DESCRIPTION>
+            <HINT>Rótulo do eixo x</HINT>
+            <VALUE>|tmp.chart.xlabel|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.ylabel">
+            <DESCRIPTION>Rótulo do eixo y</DESCRIPTION>
+            <HINT>Rótulo do eixo y</HINT>
+            <VALUE>|tmp.chart.ylabel|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.categoryDatasetDisposition">
+            <DESCRIPTION>Disposição dos dados das categorias no objeto</DESCRIPTION>
+            <HINT>line (default): os dados das séries de uma categoria estão numa única linha do objeto. column: os dados das séries das categorias estão nas colunas.</HINT>
+            <VALUE>|tmp.chart.categoryDatasetDisposition|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.plotOrientation">
+            <DESCRIPTION>Orientação do plot</DESCRIPTION>
+            <HINT>Indica a orientação que será seguida para desenhar o gráfico. Os valores possíveis são: vertical (default) ou horizontal.</HINT>
+            <VALUE>|tmp.chart.plotOrientation|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.categoryLabelUp45">
+            <DESCRIPTION>Rótulo das séries na diagonal</DESCRIPTION>
+            <HINT>Indica se o rótulo das séries deve ficar na diagonal, o valor default é false.</HINT>
+            <VALUE>|tmp.chart.categoryLabelUp45|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.tickLabelSize">
+            <DESCRIPTION>Tamanho da fonte das séries</DESCRIPTION>
+            <HINT>Indica o tamanho da fonte a ser usado nas séries, o valor padrão é o default do JFreeChart</HINT>
+            <VALUE>|tmp.chart.tickLabelSize|</VALUE>
+          </PARAMETER>
+		  <!-- parâmetros de entrada específico do gráfico em linhas -->
+        </IN>
+        <OUT>
+          <PARAMETER ID="tmp.chart.error">
+            <DESCRIPTION>Variável que conterá o stack trace se ocorrer algum erro durante a geração do gráfico.</DESCRIPTION>
+          </PARAMETER>
+        </OUT>
+      </PARAMETERS>
+    </PLUGIN>
+	<!-- definição do plug-in do gráfico em área -->
+    <PLUGIN PID="AreaChart">
+      <TITLE>Gráfico em área</TITLE>
+      <CLASS>br.com.webinside.modules.chart.AreaChart</CLASS>
+      <TYPE>CONNECTOR</TYPE>
+      <USEDIN>PRE</USEDIN>	
+      <PARAMETERS>
+        <IN>
+	  <!-- parâmetros de entrada comum a todos os gráficos -->
+          <PARAMETER ID="tmp.chart.title">
+            <DESCRIPTION>Título do gráfico</DESCRIPTION>
+            <HINT>Título do gráfico</HINT>
+            <VALUE>|tmp.chart.title|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.width">
+            <DESCRIPTION>Largura</DESCRIPTION>
+            <HINT>Largura em pixels da imagem a ser gerada</HINT>
+            <VALUE>|tmp.chart.width|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.height">
+            <DESCRIPTION>Altura</DESCRIPTION>
+            <HINT>Altura em pixels da imagem a ser gerada</HINT>
+            <VALUE>|tmp.chart.height|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.draw3d">
+            <DESCRIPTION>3D</DESCRIPTION>
+            <HINT>Indica se o gráfico será desenhado em perspectiva 3D. Os valores possíveis são true ou false.</HINT>
+            <VALUE>|tmp.chart.draw3d|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.plot.foregroundAlpha">
+            <DESCRIPTION>Nível de transparência</DESCRIPTION>
+            <HINT>Indica o nível de transparência da imagem do gráfico a ser gerado. O valor deve ser um número compreendido entre 0.0f a 1.0f, inclusives. Quanto maior o valor menor o nível de transparência.</HINT>
+            <VALUE>|tmp.chart.plot.foregroundAlpha|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.dataset.objectId">
+            <DESCRIPTION>Objeto (dataset)</DESCRIPTION>
+            <HINT>Indica o identificador do objeto que servirá como fonte de dados para popular o dataset usado pelo gráfico.</HINT>
+            <VALUE>|tmp.chart.dataset.objectId|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.backgroundColor">
+            <DESCRIPTION>Cor de fundo da imagem &lt;a href="#" onclick="colorWindow('jParam.tmp.chart.bakgroundColor'); return false;"&gt;&lt;img border="0" src="images/icons/paleta2.jpg"&gt;&lt;/a&gt;</DESCRIPTION>
+            <HINT>Indica o identificador do objeto que servirá como fonte de dados para popular o dataset usado pelo gráfico.</HINT>
+            <VALUE>|tmp.chart.backgroundColor|</VALUE>
+          </PARAMETER>
+		  <!-- parâmetros de entrada específico para gráficos que usam CategoryDataset -->
+          <PARAMETER ID="tmp.chart.xlabel">
+            <DESCRIPTION>Rótulo do eixo x</DESCRIPTION>
+            <HINT>Rótulo do eixo x</HINT>
+            <VALUE>|tmp.chart.xlabel|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.ylabel">
+            <DESCRIPTION>Rótulo do eixo y</DESCRIPTION>
+            <HINT>Rótulo do eixo y</HINT>
+            <VALUE>|tmp.chart.ylabel|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.categoryDatasetDisposition">
+            <DESCRIPTION>Disposição dos dados das categorias no objeto</DESCRIPTION>
+            <HINT>line (default): os dados das séries de uma categoria estão numa única linha do objeto. column: os dados das séries das categorias estão nas colunas.</HINT>
+            <VALUE>|tmp.chart.categoryDatasetDisposition|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.plotOrientation">
+            <DESCRIPTION>Orientação do plot</DESCRIPTION>
+            <HINT>Indica a orientação que será seguida para desenhar o gráfico. Os valores possíveis são: vertical (default) ou horizontal.</HINT>
+            <VALUE>|tmp.chart.plotOrientation|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.categoryLabelUp45">
+            <DESCRIPTION>Rótulo das séries na diagonal</DESCRIPTION>
+            <HINT>Indica se o rótulo das séries deve ficar na diagonal, o valor default é false.</HINT>
+            <VALUE>|tmp.chart.categoryLabelUp45|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.chart.tickLabelSize">
+            <DESCRIPTION>Tamanho da fonte das séries</DESCRIPTION>
+            <HINT>Indica o tamanho da fonte a ser usado nas séries, o valor padrão é o default do JFreeChart</HINT>
+            <VALUE>|tmp.chart.tickLabelSize|</VALUE>
+          </PARAMETER>
+		  <!-- parâmetros de entrada específico do gráfico em área -->
+        </IN>
+        <OUT>
+          <PARAMETER ID="tmp.chart.error">
+            <DESCRIPTION>Variável que conterá o stack trace se ocorrer algum erro durante a geração do gráfico.</DESCRIPTION>
+          </PARAMETER>
+        </OUT>
+      </PARAMETERS>
+    </PLUGIN>
+    <PLUGIN PID="Indexer">
+      <TITLE>WISearch - Indexador</TITLE>
+      <CLASS>br.com.webinside.modules.search.WIIndexer</CLASS>
+      <TYPE>CONNECTOR</TYPE>
+      <PARAMETERS>
+        <IN>
+          <PARAMETER ID="tmp.acao">
+            <DESCRIPTION>Ação a ser executada pelo conector</DESCRIPTION>
+            <HINT>create: cria um novo índice. read_conf: lê as configurações de um índice.</HINT>
+            <VALUE>|tmp.acao|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.dirName">
+            <DESCRIPTION>Repósitório dos documentos</DESCRIPTION>
+            <HINT>Diretório onde ficam armazenados os documentos antes de serem indexados.</HINT>
+            <VALUE>|tmp.dirName|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.mask">
+            <DESCRIPTION>Extensões de arquivos a serem indexados</DESCRIPTION>
+            <HINT>Lista de extensões de arquivos separados por vírgula.</HINT>
+            <VALUE>|tmp.mask|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.indexName">
+            <DESCRIPTION>Nome do índice a ser criado</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.indexName|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.parseHTML">
+            <DESCRIPTION>Processar conteúdo HTML</DESCRIPTION>
+            <HINT>Indica se o processamento de conteúdo HTML deve ser ativado</HINT>
+            <VALUE>|tmp.parseHTML|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.properties">
+            <DESCRIPTION>Propriedades adicionais ao documento</DESCRIPTION>
+            <HINT>Lista das propriedades separadas por vírgula a serem adicionadas a um documento</HINT>
+            <VALUE>|tmp.properties|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.recursive">
+            <DESCRIPTION>Pesquisar recursivamente no repositório</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.recursive|</VALUE>
+          </PARAMETER>
+        </IN>
+        <OUT>
+          <PARAMETER ID="tmp.indexer.error">
+            <DESCRIPTION>Variável que conterá o stack trace se ocorrer algum erro durante a criação do índice.</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.indexer.error|</VALUE>
+          </PARAMETER>
+        </OUT>
+      </PARAMETERS>
+    </PLUGIN>
+    <PLUGIN PID="Publicador">
+      <TITLE>WISearch - Publicador</TITLE>
+      <CLASS>br.com.webinside.modules.search.WIPublisher</CLASS>
+      <TYPE>CONNECTOR</TYPE>
+      <PARAMETERS>
+        <IN>
+          <PARAMETER ID="tmp.indexName">
+            <DESCRIPTION>Nome do índice a ser usado</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.indexName|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.arquivo">
+            <DESCRIPTION>Nome do arquivo publicado</DESCRIPTION>
+            <HINT>Se o arquivo foi publicado através de um upload utilize a variável wi.upl.filename.</HINT>
+            <VALUE>|tmp.arquivo|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.publishingDir">
+            <DESCRIPTION>Diretório onde o arquivo foi publicado</DESCRIPTION>
+            <HINT>Se o arquivo foi publicado através de um upload utilize a variável wi.upl.path.</HINT>
+            <VALUE>|tmp.publishingDir|</VALUE>
+          </PARAMETER>
+        </IN>
+        <OUT>
+          <PARAMETER ID="tmp.publisher.error">
+            <DESCRIPTION>Variável que conterá o stack trace se ocorrer algum erro durante a publicação de um documento.</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.publisher.error|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.publisher.iddoc">
+            <DESCRIPTION>Variável que conterá o identificador único do documento publicado.</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.publisher.iddoc|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.publisher.status">
+            <DESCRIPTION>Variável que indica que a publicação foi efetuada com sucesso.</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.publisher.status|</VALUE>
+          </PARAMETER>
+        </OUT>
+      </PARAMETERS>
+    </PLUGIN>
+    <PLUGIN PID="Remover">
+      <TITLE>WISearch - Remove</TITLE>
+      <CLASS>br.com.webinside.modules.search.WIRemover</CLASS>
+      <TYPE>CONNECTOR</TYPE>
+      <PARAMETERS>
+        <IN>
+          <PARAMETER ID="tmp.indexName">
+            <DESCRIPTION>Nome do índice a ser usado</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.indexName|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.idList">
+            <DESCRIPTION>IDs dos documentos a serem excluídos</DESCRIPTION>
+            <HINT>Lista dos IDs dos documentos separados por vírgula a serem excluídos do índice.</HINT>
+            <VALUE>|tmp.idList|</VALUE>
+          </PARAMETER>
+        </IN>
+        <OUT>
+          <PARAMETER ID="tmp.remover.error">
+            <DESCRIPTION>Variável que conterá o stack trace se ocorrer algum erro durante a remoção de informações do índice.</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.remover.error|</VALUE>
+          </PARAMETER>
+        </OUT>
+      </PARAMETERS>
+    </PLUGIN>
+    <PLUGIN PID="SearchGrid">
+      <TITLE>WISearch - Grid Resultado</TITLE>
+      <CLASS>br.com.webinside.modules.search.SearchGrid</CLASS>
+      <TYPE>JAVAGRID</TYPE>
+      <PARAMETERS>
+        <IN>
+          <PARAMETER ID="tmp.searchResult.caseSensitive">
+            <DESCRIPTION>Busca sensível ao caso</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.searchResult.caseSensitive|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.indexName">
+            <DESCRIPTION>Nome do índice a ser usado</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.indexName|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.searchResult.orderBy">
+            <DESCRIPTION>Nome da propriedade a ser ordenada</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.searchResult.orderBy|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.searchResult.reverse">
+            <DESCRIPTION>Ordernar descendentemente</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.searchResult.reverse|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.search.query">
+            <DESCRIPTION><em>Query</em> de pesquisa</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.search.query|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.search.queryOperator">
+            <DESCRIPTION>Operador (AND | OR)</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.search.queryOperator|</VALUE>
+          </PARAMETER>
+        </IN>
+        <OUT>
+          <PARAMETER ID="tmp.searchResult.count">
+            <DESCRIPTION>Quantidade de documentos retornados pela pesquisa.</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.searchResult.count|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.search.time">
+            <DESCRIPTION>Tempo gasto pela pesquisa em milisegundos.</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.search.time|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.search.error">
+            <DESCRIPTION>Variável que conterá o stack trace se ocorrer algum erro durante a pesquisa</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.search.error|</VALUE>
+          </PARAMETER>
+        </OUT>
+      </PARAMETERS>
+    </PLUGIN>
+    <PLUGIN PID="SearchObject">
+      <TITLE>WISearch - Objeto resultado</TITLE>
+      <CLASS>br.com.webinside.modules.search.SearchObject</CLASS>
+      <TYPE>CONNECTOR</TYPE>
+      <PARAMETERS>
+        <IN>
+          <PARAMETER ID="tmp.searchResult.caseSensitive">
+            <DESCRIPTION>Busca sensível ao caso</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.searchResult.caseSensitive|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.indexName">
+            <DESCRIPTION>Nome do índice a ser usado</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.indexName|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.searchResult.orderBy">
+            <DESCRIPTION>Nome da propriedade a ser ordenada</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.searchResult.orderBy|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.searchResult.reverse">
+            <DESCRIPTION>Ordernar descendentemente</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.searchResult.reverse|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.search.query">
+            <DESCRIPTION><em>Query</em> de pesquisa</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.search.query|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.search.queryOperator">
+            <DESCRIPTION>Operador (AND | OR)</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.search.queryOperator|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.prefix">
+            <DESCRIPTION>Objeto</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.prefix|</VALUE>
+          </PARAMETER>
+        </IN>
+        <OUT>
+          <PARAMETER ID="tmp.searchResult.count">
+            <DESCRIPTION>Quantidade de documentos retornados pela pesquisa.</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.searchResult.count|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.search.time">
+            <DESCRIPTION>Tempo gasto pela pesquisa em milisegundos.</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.search.time|</VALUE>
+          </PARAMETER>
+          <PARAMETER ID="tmp.search.error">
+            <DESCRIPTION>Variável que conterá o stack trace se ocorrer algum erro durante a pesquisa</DESCRIPTION>
+            <HINT></HINT>
+            <VALUE>|tmp.search.error|</VALUE>
+          </PARAMETER>
+        </OUT>
+      </PARAMETERS>
+    </PLUGIN>
+  </PLUGINS>
+</REGISTER>
