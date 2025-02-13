@@ -50,7 +50,7 @@ public class PageElement extends TagSupport {
             if (obj instanceof ExecuteParams) {
                 exit = false;
             	Class cl = Class.forName("br.com.webinside.runtime.component." + getType());
-            	pageContext.setAttribute(getName(), cl.newInstance());
+            	pageContext.setAttribute(getName(), cl.getConstructor().newInstance());
             } else {
                 HttpServletResponse response =
                     (HttpServletResponse) pageContext.getResponse();

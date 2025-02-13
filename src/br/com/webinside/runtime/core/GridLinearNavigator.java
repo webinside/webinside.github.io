@@ -21,12 +21,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import br.com.webinside.runtime.component.AbstractGridLinear;
 import br.com.webinside.runtime.component.GridRef;
 import br.com.webinside.runtime.component.GridSql;
+import br.com.webinside.runtime.function.sv.SVNode;
+import br.com.webinside.runtime.integration.IntFunction;
 import br.com.webinside.runtime.integration.InterfaceGrid;
 import br.com.webinside.runtime.integration.Producer;
 import br.com.webinside.runtime.integration.ProducerParam;
@@ -34,12 +37,13 @@ import br.com.webinside.runtime.integration.taglib.ScriptOrStyle;
 import br.com.webinside.runtime.util.I18N;
 import br.com.webinside.runtime.util.StringA;
 import br.com.webinside.runtime.util.WIMap;
+import br.com.webinside.runtime.util.WISession;
 
 /**
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.5 $
  */
 public class GridLinearNavigator {
     /** DOCUMENT ME! */
@@ -419,19 +423,12 @@ public class GridLinearNavigator {
     }
 
     private String makeForm() {
+        Set<String> svSet = wiParams.getProject().getSecureVars();
         StringBuffer form = new StringBuffer();
         WIMap aux = new WIMap();
-        if (wiParams.getProject().isRequestScope()) {
-            aux = wiMap.cloneMe();
-            aux.remove("app.");
-            aux.remove("pvt.");
-            aux.remove("wi.");
-            aux.remove("combo.");
-        } else {
-            aux.putObj("tmp.", wiMap.getObj("tmp."));
-            aux.putObj("stmp.", wiMap.getObj("stmp."));
-            aux.putObj("grid.", wiMap.getObj("grid."));
-        }
+        aux.putObj("tmp.", wiMap.getObj("tmp."));
+        aux.putObj("stmp.", wiMap.getObj("stmp."));
+        aux.putObj("grid.", wiMap.getObj("grid."));
         boolean debug = debug(wiMap);
         Map all = aux.getAsMap();
         Iterator it = all.keySet().iterator();
@@ -458,6 +455,11 @@ public class GridLinearNavigator {
 	            if (value.length() < 100) {
 	                if (!value.equals("")) {
 	                    value = StringA.changeLinebreak(value, "\\n");
+	                	WISession session = wiParams.getWISession();
+	                    if (IntFunction.isSecureVar(svSet, key) && session.isValid()) {
+                        	SVNode svNode = IntFunction.getSVNode(session, key);
+                        	value = svNode.addValue(wiMap.get("wi.page.id"), value);
+	                    }
 	                    form.append(makeFormItem(key, value, debug));
 	                }
 	            }
@@ -528,7 +530,7 @@ public class GridLinearNavigator {
     private static void gridNavScript(StringBuffer aux, WIMap wiMap) {
     	HttpServletRequest req = ExecuteParams.get().getHttpRequest();
     	String path = "/" + wiMap.get("wi.proj.id") + "/js/gridnav.js";
-    	List<String> list = (List) req.getAttribute(ScriptOrStyle.WI_LIST_KEY);
+    	List<String> list = (List) req.getAttribute(ScriptOrStyle.WI_REQ_LIST_KEY);
     	if (list != null && list.contains(path)) return;
         aux.append("<script src='" + path + "'");
         aux.append(" type='text/javascript'></script>\n");

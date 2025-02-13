@@ -45,7 +45,7 @@ import br.com.webinside.runtime.integration.Producer;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.4 $
  */
 public class CoreMailList extends CoreCommon {
 
@@ -68,20 +68,15 @@ public class CoreMailList extends CoreCommon {
      * DOCUMENT ME!
      */
     public void execute() {
-    	if (!isValidCondition()) {
-            return;
-        }
+    	if (!isValidCondition()) return;
         try {
         	store = null;
         	mailList();
+        	if (store != null) {
+        		store.close();
+        	}
         } catch (MessagingException err) {
         	wiParams.getErrorLog().write(getClass().getName(), "execute", err);
-        } finally {
-        	if (store != null) { 
-        		try {
-					store.close();
-				} catch (MessagingException e) { }
-        	}
         }
     }    
     	
@@ -92,7 +87,7 @@ public class CoreMailList extends CoreCommon {
         				host.getProtocol().startsWith("IMAP"))) {
         	store = IntFunction.getStoreConnection(wiMap, host);
         	if (store == null) {
-                EngFunction.hostError(wiParams, list.getHostId());
+                RtmFunction.hostError(wiParams, list.getHostId());
         		return;
         	}
         }

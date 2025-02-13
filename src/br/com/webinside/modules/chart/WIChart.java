@@ -73,6 +73,8 @@ public abstract class WIChart extends AbstractConnector
     /** DOCUMENT ME! */
     public static final String CHART_3D_VAR = "tmp.chart.draw3d";
     /** DOCUMENT ME! */
+    public static final String CHART_LEGEND = "tmp.chart.legend";
+    /** DOCUMENT ME! */
     public static final String CHART_PLOT_FOREGROUND_VAR =
         "tmp.chart.plot.foregroundAlpha";
     /** DOCUMENT ME! */
@@ -97,6 +99,8 @@ public abstract class WIChart extends AbstractConnector
     protected String type;
     /** DOCUMENT ME! */
     protected boolean draw3d;
+    /** DOCUMENT ME! */
+    protected boolean legend;
     /** DOCUMENT ME! */
     protected float plotForegroundAlpha;
     /** DOCUMENT ME! */
@@ -126,7 +130,9 @@ public abstract class WIChart extends AbstractConnector
         addInParameter(WIChart.CHART_HEIGHT_VAR, "Altura",
             "Altura do gráfico gerado.");
         addInParameter(WIChart.CHART_3D_VAR, "3D",
-            "Indica se o gráfico será desenhado em perspectiva 3D.");
+            "Indica se o gráfico será desenhado em perspectiva 3D (true ou false).");
+        addInParameter(WIChart.CHART_LEGEND, "Legenda",
+                "Indica se o gráfico mostrará a legenda (true ou false).");
         addInParameter(WIChart.CHART_PLOT_FOREGROUND_VAR,
             "Nível de opacidade do gráfico",
             "Indica o nível de opacidade que o gráfico "
@@ -156,6 +162,15 @@ public abstract class WIChart extends AbstractConnector
         return draw3d;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public boolean hasLegend() {
+        return legend;
+    }
+    
     /**
      * DOCUMENT ME!
      *
@@ -201,6 +216,15 @@ public abstract class WIChart extends AbstractConnector
         draw3d = b;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param b DOCUMENT ME!
+     */
+    public void setLegend(boolean b) {
+        legend = b;
+    }
+    
     /**
      * DOCUMENT ME!
      *
@@ -404,6 +428,7 @@ public abstract class WIChart extends AbstractConnector
                 setBackgroundColor(Color.decode(bgColor));
             }
             setDraw3d(context.get(WIChart.CHART_3D_VAR).equalsIgnoreCase("true"));
+            setLegend(!context.get(WIChart.CHART_LEGEND).trim().equalsIgnoreCase("false"));
             setObjectId(context.get(WIChart.CHART_DATASET_OBJ_VAR));
 
             //chamada aos métodos que devem ser implementados pelas subclasses

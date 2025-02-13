@@ -49,6 +49,13 @@
 				<TEMPLATE>file:[db];auto_server=true</TEMPLATE>
 				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
 			</JDBC>
+			<JDBC ID="IRIS">
+				<DESCRIPTION>IRIS</DESCRIPTION>	
+				<CLASS TYPE="USEINSTANCE">com.intersystems.jdbc.IRISDriver</CLASS>
+				<URL>jdbc:IRIS:|alias|</URL>
+				<TEMPLATE>//[host]:1972/[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1 as cod from dual</VALIDATIONQUERY>
+			</JDBC>
 			<JDBC ID="Notes">
 				<DESCRIPTION>IBM Lotus Domino/Notes</DESCRIPTION>
 				<CLASS>lotus.jdbc.domino.DominoDriver</CLASS>
@@ -152,6 +159,13 @@
 				<URL>jdbc:sequoia:|alias|</URL>
 				<TEMPLATE>//[host]:25322/[db]</TEMPLATE>
 				<VALIDATIONQUERY>select 1 as cod from dual</VALIDATIONQUERY>
+			</JDBC>
+			<JDBC ID="SQLite">
+				<DESCRIPTION>SQLite</DESCRIPTION>	
+				<CLASS>org.sqlite.JDBC</CLASS>
+				<URL>jdbc:sqlite:|alias|</URL>
+				<TEMPLATE>[db]</TEMPLATE>
+				<VALIDATIONQUERY>select 1</VALIDATIONQUERY>
 			</JDBC>
 			<JDBC ID="SqlServer">
 				<DESCRIPTION>SqlServer</DESCRIPTION>	

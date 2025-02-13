@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import br.com.webinside.runtime.core.EngFunction;
+import br.com.webinside.runtime.core.RtmFunction;
 import br.com.webinside.runtime.database.ResultSet;
 import br.com.webinside.runtime.database.impl.ConnectionSql;
 import br.com.webinside.runtime.exception.UserException;
@@ -29,6 +29,7 @@ import br.com.webinside.runtime.function.DateFormat;
 import br.com.webinside.runtime.function.TextFormat;
 import br.com.webinside.runtime.integration.DatabaseAliases;
 import br.com.webinside.runtime.integration.DatabaseHandler;
+import br.com.webinside.runtime.integration.IntFunction;
 import br.com.webinside.runtime.integration.InterfaceHeaders;
 import br.com.webinside.runtime.integration.InterfaceParameters;
 import br.com.webinside.runtime.integration.JavaParameter;
@@ -61,7 +62,7 @@ public class Persist extends AbstractConnectorDB implements InterfaceParameters 
 				execute(wiMap, dh, table, variable);
 			}
 		} catch (Exception err) {
-        	EngFunction.invalidateTransaction(wiMap, err.toString());
+        	RtmFunction.invalidateTransaction(wiMap, err.toString());
 			String pageId = wiMap.get("wi.page.id");
 			String table = wiMap.get("tmp.persist.table");
 			String message = "Page: " + pageId + ", Table: " + table;
@@ -70,6 +71,7 @@ public class Persist extends AbstractConnectorDB implements InterfaceParameters 
 				String resp = wiMap.get("tmp.persist.resp").trim();
 				wiMap.put(resp + ".ok()", "false");
 				wiMap.put(resp, dh.getErrorMessage());
+	        	IntFunction.setMessageError(wiMap, resp, dh.getErrorMessage());
 			}
 		}
 	}
@@ -155,10 +157,10 @@ public class Persist extends AbstractConnectorDB implements InterfaceParameters 
 				respCode = dh.executeUpdate(query, wiMap);
 	        } catch (Exception err) {
 	        	queryException(wiMap, err, dh);
-	        	respCode = EngFunction.errorCodeSQL(err);
+	        	respCode = RtmFunction.errorCodeSQL(err);
 	        }
 			if (respCode < 0) {
-	        	EngFunction.invalidateTransaction(wiMap, dh.getErrorMessage());
+	        	RtmFunction.invalidateTransaction(wiMap, dh.getErrorMessage());
 	            dh.updateLog(wiMap, false);
 			}	
 		}
@@ -185,7 +187,7 @@ public class Persist extends AbstractConnectorDB implements InterfaceParameters 
 		}
 		String msgUpdate = wiMap.get("tmp.persist.msg.update").trim();
 		if (msgUpdate.equals("")) {
-			msgUpdate = "Registro atualizado com sucesso";
+			msgUpdate = "Registro alterado com sucesso";
 		}
 		if (!resp.equals("")) {
 			if (respCode >= 0) {
@@ -200,6 +202,7 @@ public class Persist extends AbstractConnectorDB implements InterfaceParameters 
 			} else {
 				wiMap.put(resp + ".ok()", "false");
 				wiMap.put(resp, dh.getErrorMessage());
+	        	IntFunction.setMessageError(wiMap, resp, dh.getErrorMessage());
 			}
 		}
 	}
@@ -239,11 +242,18 @@ public class Persist extends AbstractConnectorDB implements InterfaceParameters 
 			} else if (tokenValue.indexOf("/") > -1) {
 				String mask = type.equals("date") ? "ymd" : "ymdhms";
 				value = "?|" + token + "." + mask + "|";
-				String[] args = {tokenValue,"FMT" + mask};
-				try {
+				String[] args = {tokenValue,"FMT" + mask}; 
+				try { 
 					String resp = new DateFormat().execute(args);
-					if (resp.equals("")) resp = "null";
-					wiMap.put(token + "." + mask, resp);
+					if (resp.equals("")) {
+						value = "null";
+						String id = "Convert date for " + token + "." + mask;
+						String msg = "Invalid format " + tokenValue;
+						getParams().getErrorLog().write(getClass().getName(), id, msg);
+						IntFunction.setMessageError(wiMap, resp, msg);
+					} else {
+						wiMap.put(token + "." + mask, resp);
+					}
 				} catch (Exception err) {
 					value = "null";
 				}

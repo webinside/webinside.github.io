@@ -25,6 +25,7 @@ import javax.servlet.jsp.tagext.BodyContent;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
 import br.com.webinside.runtime.core.ExecuteParams;
+import br.com.webinside.runtime.core.ExecuteParamsEnum;
 
 /**
  * Classe que implementa um TagLib para gerar um elemento do Grid.
@@ -71,7 +72,7 @@ public class GridElement extends BodyTagSupport {
      */
     public void setBodyContent(BodyContent arg0) {
         super.setBodyContent(arg0);
-        wiParams.setParameter(ExecuteParams.OUT_WRITER, pageContext.getOut());
+        wiParams.setParameter(ExecuteParamsEnum.OUT_WRITER, pageContext.getOut());
     }
 
     /**

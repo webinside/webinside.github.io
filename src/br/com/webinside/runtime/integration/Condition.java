@@ -22,7 +22,9 @@ import java.math.BigDecimal;
 import br.com.webinside.runtime.util.StringA;
 import br.com.webinside.runtime.util.WIMap;
 
-// Supports =,!=,==,>,>=,!>,<,<=,!< and ()
+// Supporta:  =,!=,==,>,>=,!>,<,<=,!<
+// Especiais: [ct],[sw] 
+// Pode usar () para agrupar validacoes
 // Pode usar conjuntos ...&&...&&...  ("and" todos)
 // Pode usar conjuntos ...||...||... ("or" todos)
 public class Condition {
@@ -176,17 +178,27 @@ public class Condition {
             }
         }
         pos = -1;
+        while ((pos = condition.indexOf("[", pos + 1)) > -1) {
+            if (!inFunction(condition, pos)) {
+                return special(condition, pos);
+            }
+        }
+        pos = -1;
         while ((pos = condition.indexOf("=", pos + 1)) >= 0) {
             if (!inFunction(condition, pos)) {
+            	boolean isBefore = false; 
                 if (pos > 0) {
                 	char before = condition.charAt(pos - 1); 
                 	if (before == '!' || before == '#') {
                 		pos = pos - 1;
+                		isBefore = true;
                 	}
                 }
                 if (!inPipe(condition, pos)) {
                     return equal(condition, pos);
-                }
+                } else if (isBefore) {
+                	pos = pos + 1;
+                }	
             }
         }
         ProducerParam param = new ProducerParam();
@@ -224,15 +236,32 @@ public class Condition {
         	BigDecimal ipo1 = new BigDecimal(0);
         	BigDecimal ipo2 = new BigDecimal(0);
             try {
-                ipo1 = new BigDecimal(po1);
+                ipo1 = new BigDecimal(cleanNumber(po1));
             } catch (NumberFormatException err) { /*ignorado*/ }
             try {
-                ipo2 = new BigDecimal(po2);
+                ipo2 = new BigDecimal(cleanNumber(po2));
             } catch (NumberFormatException err) { /*ignorado*/ }
             return (ipo1.compareTo(ipo2) == 0);
         }
         if (seq.equals("==")) return po1.equals(po2);
         return po1.equalsIgnoreCase(po2) ^ inverse;
+    }
+    
+    // Usado para "[ct]" (Contains Text) e "[sw]" (Starts With)
+    private boolean special(String cond, int pos) {
+        String seq = StringA.mid(cond, pos, pos + 3).toLowerCase();
+        ProducerParam param = new ProducerParam();
+        param.setWIMap(wiMap);
+        producer.setParam(param);
+        param.setInput(StringA.mid(cond, 0, pos - 1));
+        producer.execute();
+        String po1 = cleanText(param.getOutput()).toLowerCase();
+        param.setInput(StringA.mid(cond, pos + seq.length(), cond.length()));
+        producer.execute();
+        String po2 = cleanText(param.getOutput()).toLowerCase();
+        if (seq.equals("[ct]")) return po1.indexOf(po2) > -1;
+        if (seq.equals("[sw]")) return po1.startsWith(po2);
+        return false;
     }
 
     // Usado para: ">", ">=", "!>" e "<", "<=", "!>"
@@ -312,6 +341,9 @@ public class Condition {
     }
 
     private String cleanNumber(String number) {
+    	if (number.indexOf(",") > -1) {
+    		number = number.replaceAll("\\.", "").replace(",", ".");
+    	}
         String aux = "0123456789.-";
         StringA response = new StringA();
         for (int i = 0; i < number.length(); i++) {
@@ -323,9 +355,7 @@ public class Condition {
         String ini = response.piece(".", 1);
         String end = response.piece(".", 2, 0);
         end = new StringA(end).changeChars(".", "");
-        if (end.equals("")) {
-            end = "0";
-        }
+        if (end.equals("")) end = "0";
         return ini + "." + end;
     }
     

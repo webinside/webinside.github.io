@@ -18,6 +18,7 @@
 package br.com.webinside.runtime.function;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +70,7 @@ public class NumberList extends AbstractFunction {
         String key = args[0].toLowerCase();
         String value = args[1];
         String result = "";
+		boolean empty = false; 
 
         try {
         	if (value.equalsIgnoreCase(SUM)) {
@@ -78,7 +80,7 @@ public class NumberList extends AbstractFunction {
         		if (list.size() > 0) {
         			BigDecimal sum = getSum(list).setScale(3);
         			BigDecimal divisor = new BigDecimal(list.size());
-                    result = sum.divide(divisor,BigDecimal.ROUND_HALF_EVEN) + "";
+                    result = sum.divide(divisor,RoundingMode.HALF_EVEN) + "";
         		} else {
         			result = "0";
         		}
@@ -96,6 +98,13 @@ public class NumberList extends AbstractFunction {
             	if (aux == null) aux = new BigDecimal(0);
         		result = aux + "";
         	} else {
+        		if (args.length == 3 && args[2].equals("empty")) {
+        			empty = true;
+        		}
+        		if (value.equalsIgnoreCase("empty")) {
+        			empty = true;
+        			value = "";
+        		}
         		if (value.equals("")) value = "0";
         		WIMap wiMap = getWiMap();
             	if (getWiMap().getObj("super.") != null) {
@@ -109,12 +118,12 @@ public class NumberList extends AbstractFunction {
             	} catch (NumberFormatException err) {
             		value="#error#";
             	}
-                result = value;
+                if (!empty) result = value;
         	}
         	if (value.indexOf("#") == -1 && args.length == 3) {
         		String[] params = {result, args[2]};
                 NumberFormat nf = new NumberFormat(getWiMap());
-                result = nf.execute(getWiParams(), params);
+                if (!empty) result = nf.execute(getWiParams(), params);
         	}
         } catch (Exception e) {
         	e.printStackTrace(System.err);

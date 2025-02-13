@@ -48,6 +48,7 @@ import br.com.webinside.runtime.database.DatabaseConnection;
 import br.com.webinside.runtime.database.DatabaseDrivers;
 import br.com.webinside.runtime.database.ErrorCode;
 import br.com.webinside.runtime.database.ResultSet;
+import br.com.webinside.runtime.function.TextFormat;
 import br.com.webinside.runtime.integration.Producer;
 import br.com.webinside.runtime.integration.ProducerParam;
 import br.com.webinside.runtime.util.ErrorLog;
@@ -59,7 +60,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.5 $
  */
 public class ConnectionSql extends DatabaseConnection {
     private Connection connection;
@@ -253,14 +254,19 @@ public class ConnectionSql extends DatabaseConnection {
                 return resp;
             }
         } catch (SQLException err) {
-        	if (getType().equals("CACHE")) {
+        	if (isIntersys()) {
         		try {
         			setValid(connection.isValid(1000));
         		} catch (Throwable ex) {
                 	setValid(false);
         		}
         	}
-            sqlError(err, stmt.getWarnings());
+        	SQLWarning warnings = null;
+        	if (stmt != null) {
+        		// Tratamento de erro do Driver do Caché
+        		warnings = stmt.getWarnings();
+        	}
+            sqlError(err, warnings);
             throw err;
         } catch (IOException err) {
         }
@@ -338,7 +344,7 @@ public class ConnectionSql extends DatabaseConnection {
             	}
             }
         } catch (SQLException err) {
-        	if (getType().equals("CACHE")) {
+        	if (isIntersys()) {
             	setValid(false);
         	}
             sqlError(err, stmt.getWarnings());
@@ -384,7 +390,7 @@ public class ConnectionSql extends DatabaseConnection {
             }
             return resp;
         } catch (SQLException err) {
-        	if (getType().equals("CACHE")) {
+        	if (isIntersys()) {
             	setValid(false);
         	}
             sqlError(err, stmt.getWarnings());
@@ -396,6 +402,12 @@ public class ConnectionSql extends DatabaseConnection {
 
     private Map createStatement(String query, WIMap wiMap, InputStream in, 
     		boolean isUpdate) throws SQLException, IOException {
+    	// Usado para SELECT para desativar o type_scroll
+    	boolean forward = false;
+    	if (query.toLowerCase().trim().startsWith("[sql_type_forward]")) {
+    		query = StringA.mid(query, query.indexOf("]") + 1, query.length()).trim();
+    		forward = true;
+    	}
         // Montando a nova query
     	Map out = new HashMap();
         List params = new ArrayList();
@@ -427,18 +439,20 @@ public class ConnectionSql extends DatabaseConnection {
             from = end + 1;
         }
         resp.append(StringA.mid(query, from, query.length()));
-        String newQuery = resp.toString();
+        String newQuery = resp.toString().trim();
 
         // Criando o Statement
-		String cleanQuery = StringA.changeChars(query.toLowerCase()," ","");
+		String cleanQuery = StringA.changeChars(newQuery.toLowerCase(), " ", "");
         try {        	
         	if (isUpdate) throw new AbstractMethodError();
-        	// Usado para SELECT
             int sens = java.sql.ResultSet.TYPE_SCROLL_INSENSITIVE;
             int conc = java.sql.ResultSet.CONCUR_READ_ONLY;
+            if (forward || getType().equals("SQLITE")) {
+                sens = java.sql.ResultSet.TYPE_FORWARD_ONLY;
+            }
             if (cleanQuery.startsWith("{call")) {
-                stmt = connection.prepareCall(newQuery.trim(), sens, conc);
-            } else if (query.equals(newQuery) && (in == null)) {
+                stmt = connection.prepareCall(newQuery, sens, conc);
+            } else if (query.trim().equals(newQuery) && (in == null)) {
                 stmt = connection.createStatement(sens, conc);
             } else {
                 stmt = connection.prepareStatement(newQuery, sens, conc);
@@ -447,7 +461,7 @@ public class ConnectionSql extends DatabaseConnection {
         	// Usado para UPDATE
             if (cleanQuery.startsWith("{call")) {
                 stmt = connection.prepareCall(newQuery);
-            } else if (query.equals(newQuery) && (in == null)) {
+            } else if (query.trim().equals(newQuery) && (in == null)) {
                 stmt = connection.createStatement();
             } else {
             	if (returnGeneratedKeys) {
@@ -473,7 +487,7 @@ public class ConnectionSql extends DatabaseConnection {
 			populatePS(params, inc, posStream, in);
 		}	
         try {
-        	if (!isUpdate && !getType().equals("CACHE")) {
+        	if (!isUpdate && !isIntersys()) {
         		stmt.setFetchSize(100);
         	}	
         } catch (Throwable err) {
@@ -493,7 +507,7 @@ public class ConnectionSql extends DatabaseConnection {
     		int pos = param.indexOf(".out|");
     		param = StringA.mid(param, 0, pos-1) + "|";
     		String var = StringA.changeChars(param, "|", "").trim();
-    		out.put(new Integer(params.size()+1), var);
+    		out.put(Integer.valueOf(params.size()+1), var);
     	}
         prod.setInput(param);
         new Producer(prod).execute();
@@ -561,7 +575,7 @@ public class ConnectionSql extends DatabaseConnection {
     				ps.setBinaryStream((i + inc), bais, bais.available());
     			} else if (type.equalsIgnoreCase("dat")) {
     				try {
-    					String pat1 = "yyyy-MM-dd hh:mm:ss";
+    					String pat1 = "yyyy-MM-dd HH:mm:ss";
     					String pat2 = "yyyy-MM-dd";
     					SimpleDateFormat sds = new SimpleDateFormat(pat1);
     					if (value.trim().length() == 10) {
@@ -616,6 +630,10 @@ public class ConnectionSql extends DatabaseConnection {
     				} else {
     					ps.setNull((i + inc), Types.NULL);
     				}
+    			} else if (type.equalsIgnoreCase("msw")) {
+    				String fArgs[] = {value, "msword"};
+    				String filterValue = new TextFormat().execute(fArgs);
+      				ps.setString((i + inc), filterValue);
     			} else {
     				ps.setString((i + inc), value);
     			}

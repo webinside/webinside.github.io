@@ -18,6 +18,8 @@
 package br.com.webinside.runtime.net;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,11 +29,13 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FileUtils;
 
 import br.com.webinside.runtime.util.Function;
 import br.com.webinside.runtime.util.StringA;
@@ -40,10 +44,10 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.8 $
  */
 public class FileUpload extends ServletFileUpload {
-    private List items;
+    private List<FileItem> items;
     private Map fields;
     private Map files;
     private Map extraFiles;
@@ -63,8 +67,7 @@ public class FileUpload extends ServletFileUpload {
      *
      * @throws FileUploadException DOCUMENT ME!
      */
-    public void parse(HttpServletRequest request)
-        throws FileUploadException {
+    public void parse(HttpServletRequest request) throws FileUploadException {
         items = parseRequest(request);
         fields = new HashMap();
         files = new HashMap();
@@ -78,25 +81,22 @@ public class FileUpload extends ServletFileUpload {
             if (item.isFormField()) {
             	addField(field, item.getString());
             } else {
-                String fname = StringA.change(item.getName(), "\\", "/");
-                int last = fname.lastIndexOf("/");
-                if (last > -1) {
-                    fname = StringA.mid(fname, last + 1, fname.length());
-                }
-                int ldot = fname.lastIndexOf(".");
-                if (ldot == -1) {
-                    ldot = fname.length();
-                }
-                String ext = StringA.mid(fname, ldot + 1, fname.length() - 1);
-                if (ext.equalsIgnoreCase("JPEG")) ext = "JPG";
-                if (ext.length() >= 3 && ext.length() <= 5) {
-                	ext = ext.toLowerCase();
-                	fname = StringA.mid(fname, 0, ldot - 1) + "." + ext;
-                }
+            	Map<String,String> fnameMap = getItemNameMap(item);
+            	String fname = fnameMap.get("fname");
                 files.put(field, item);
             	addField(field, fname);
+            	String name = fnameMap.get("name");
+                String ext = fnameMap.get("ext");
+            	addField(field + ".name", name);
             	addField(field + ".ext", ext);
             	addField(field + ".size", item.getSize() + "");
+            	try {
+	        		InputStream fIn = item.getInputStream();
+	            	addField(field + ".sha1", DigestUtils.sha1Hex(fIn));
+        		fIn.close();
+            	} catch (IOException e) {
+            		throw new FileUploadException("sha1 error", e);
+            	}
             }
         }
     }
@@ -158,6 +158,22 @@ public class FileUpload extends ServletFileUpload {
     public Map getFilesMap() {
         return files;
     }
+    
+    public List<FileItem> getMultFileField(String field) {
+    	List<FileItem> resp = new ArrayList<>();
+        for (FileItem item : items) {
+            if (!item.isFormField()) {
+                String fname = item.getFieldName().toLowerCase();
+                if (fname.toLowerCase().startsWith("tmp_")) {
+                	fname = "tmp." + StringA.mid(fname, 4, fname.length());
+                }
+                if (fname.equals(field)) {
+                	resp.add(item);
+                }
+            }
+		}
+        return resp;
+    }
 
     /**
      * DOCUMENT ME!
@@ -191,6 +207,35 @@ public class FileUpload extends ServletFileUpload {
         File file = (File) extraFiles.get(field.toLowerCase());
         return ((file != null) && (file.length() > 0));
     }
+    
+    /**
+     * DOCUMENT ME!
+     *
+     * @param field DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public Map<String, String> getItemNameMap(FileItem item) {
+    	Map<String, String> map = new HashMap<>();
+        String fname = StringA.change(item.getName(), "\\", "/");
+        int last = fname.lastIndexOf("/");
+        if (last > -1) {
+            fname = StringA.mid(fname, last + 1, fname.length());
+        }
+        int ldot = fname.lastIndexOf(".");
+        if (ldot == -1) ldot = fname.length();
+        String name = StringA.mid(fname, 0, ldot - 1);
+        String ext = StringA.mid(fname, ldot + 1, fname.length() - 1);
+        if (ext.equalsIgnoreCase("JPEG")) ext = "JPG";
+        if (ext.length() >= 2 && ext.length() <= 4) {
+        	ext = ext.toLowerCase();
+        	fname = name + "." + ext;
+        }
+        map.put("fname", fname);
+        map.put("name", name);
+        map.put("ext", ext);
+    	return map;
+    }
 
     /**
      * DOCUMENT ME!
@@ -208,7 +253,8 @@ public class FileUpload extends ServletFileUpload {
                     item.write(new File(targetFile));
                 } else {
                 	File file = (File) extraFiles.get(field.toLowerCase());
-                	file.renameTo(new File(targetFile));
+                	FileUtils.copyFile(file, new File(targetFile));
+                	file.delete();
                 }
                 return true;
             } catch (Exception err) {

@@ -28,7 +28,7 @@ import br.com.webinside.runtime.integration.JavaParameter;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.9 $
  */
 public class CoreConnector extends CoreCommon {
     private Connector connector;
@@ -67,14 +67,14 @@ public class CoreConnector extends CoreCommon {
             Class cl = getUserClass(name);
             if (cl != null) {
                 JavaParameter[] params = connector.getInputParameters();
-                EngFunction.putJavaParameters(wiMap, params);
+                RtmFunction.putJavaParameters(wiMap, params);
                 boolean exit = false;
                 if (IntFunction.useCompat(cl)) {
-                	Class c = Class.forName("br.com.itx.engine.Compat");
+                	Class c = Class.forName("br.com.itx.engine.CompatImpl");
                 	Method m = c.getMethod("connector", Class.class, ExecuteParams.class);
-                	exit = (Boolean) m.invoke(c.newInstance(), cl, wiParams);
+                	exit = (Boolean) m.invoke(c.getConstructor().newInstance(), cl, wiParams);
                 } else {
-	                InterfaceConnector i = (InterfaceConnector) cl.newInstance();
+	                InterfaceConnector i = (InterfaceConnector) cl.getConstructor().newInstance();
 	                i.execute(wiParams);
 	                exit = i.exit(); 
                 }
@@ -90,7 +90,7 @@ public class CoreConnector extends CoreCommon {
 			if (!wiParams.getPage().getErrorPageName().equals("")) {
 				wiParams.setRequestAttribute("wiException", err);
 			}
-        } catch (Error err) {
+        } catch (Throwable err) {
             wiParams.getErrorLog().write(name, lblpage, err);
         }
         writeLog();

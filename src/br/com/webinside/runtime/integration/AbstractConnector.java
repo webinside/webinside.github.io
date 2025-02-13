@@ -27,7 +27,7 @@ import br.com.webinside.runtime.util.*;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class AbstractConnector implements InterfaceConnector {
     private ExecuteParams params;
@@ -43,7 +43,7 @@ public abstract class AbstractConnector implements InterfaceConnector {
         this.params = wiParams;
         WIMap wiMap = wiParams.getWIMap();
         DatabaseAliases databases = wiParams.getDatabaseAliases();
-        Headers headers = new Headers(wiParams);
+        RtmHeaders headers = new RtmHeaders(wiParams);
         execute(wiMap, databases, headers);
     }
 

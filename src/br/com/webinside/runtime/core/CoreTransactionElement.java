@@ -18,6 +18,7 @@
 package br.com.webinside.runtime.core;
 
 import br.com.webinside.runtime.component.TransactionElement;
+import br.com.webinside.runtime.integration.IntFunction;
 import br.com.webinside.runtime.integration.Producer;
 import br.com.webinside.runtime.util.Function;
 import br.com.webinside.runtime.util.WIMap;
@@ -26,7 +27,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CoreTransactionElement extends CoreCommon {
 
@@ -94,6 +95,7 @@ public class CoreTransactionElement extends CoreCommon {
 	    			wiMap.put(wiobj, msgfalse);
 	            	wiMap.put(wiobj + ".status()", status);
 	            	wiMap.put(wiobj + ".ok()", "false");
+		        	IntFunction.setMessageError(wiMap, wiobj, msgfalse);
 	    		}
         	}	
     		wiMap.remove("wi.transaction.");

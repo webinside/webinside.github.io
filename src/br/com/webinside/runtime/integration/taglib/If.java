@@ -46,10 +46,15 @@ public class If extends TagSupport {
      */
     public int doStartTag() throws JspException {
         int ret = SKIP_BODY;
+        Integer ifSeq = (Integer) pageContext.getAttribute("wi_tag_if_level");
+        ifSeq = (ifSeq == null) ? 1 : ifSeq + 1;
+        pageContext.setAttribute("wi_tag_if_level", ifSeq);                
+        // Inicio do contexto WI
         Object obj = pageContext.getRequest().getAttribute("wiParams");
         if (obj instanceof ExecuteParams) {
             ExecuteParams wiParams = (ExecuteParams) obj;
             try {
+            	// validation utilizado na validacao de campos do formulario
                 if (validation != null &&
                 		validation.equalsIgnoreCase("true")) {
                     if (Validator.isDisabledCondition(wiParams.getWIMap(), test)) {
@@ -57,14 +62,12 @@ public class If extends TagSupport {
                         return SKIP_BODY;
                     }
                 }
-                Condition cond =
-                    new Condition(wiParams.getWIMap(), getTest());                
+                Condition cond = new Condition(wiParams.getWIMap(), getTest());                
                 boolean status = cond.execute();                
-                if (status) {
-                    ret = EVAL_BODY_INCLUDE;
-                }
+                if (status) ret = EVAL_BODY_INCLUDE;
+                pageContext.setAttribute("wi_tag_else_" + ifSeq, status);
                 if (getVar() != null) {
-                  wiParams.getWIMap().put(getVar(), status + "");
+                	wiParams.getWIMap().put(getVar(), status + "");
                 }
             } catch (Exception err) {
             	wiParams.getErrorLog().write("If", "taglib", err);
@@ -74,8 +77,15 @@ public class If extends TagSupport {
         reset();
         return ret;
     }
-
-    private void reset() {
+    
+    @Override
+	public int doEndTag() throws JspException {
+        Integer ifSeq = (Integer) pageContext.getAttribute("wi_tag_if_level");
+        pageContext.setAttribute("wi_tag_if_level", ifSeq - 1);                
+		return super.doEndTag();
+	}
+    
+	protected void reset() {
     	test = null;
     	var = null;
     	validation = null;

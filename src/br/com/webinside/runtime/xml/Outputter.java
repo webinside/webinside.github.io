@@ -185,9 +185,6 @@ public class Outputter {
 
     private void putVersionTag(Element parent) {
         XMLFunction.setElemValue(parent, "WIVERSION", WIVersion.VERSION);
-        String versionDebug = 
-        	(WIVersion.VERSION_DEBUG > 0 ? WIVersion.VERSION_DEBUG: "") + "";
-        XMLFunction.setElemValue(parent, "DEBUGVERSION", versionDebug);
     }
 
     /**

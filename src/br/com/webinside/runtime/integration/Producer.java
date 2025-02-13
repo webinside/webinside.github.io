@@ -355,7 +355,7 @@ public class Producer {
 	            	if (wiParams == null) {
 	            		wiParams = new ExecuteParams();
 	            		WIMap wiMap = params.getWIMap(); 
-	            		wiParams.setParameter(ExecuteParams.WI_MAP, wiMap);
+	            		wiParams.setParameter(ExecuteParamsEnum.WI_MAP, wiMap);
 	            	}
 	                resp = IntFunction.executeFunctionWI(express, 
 	                		wiParams, params.wiMap);

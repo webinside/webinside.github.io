@@ -37,10 +37,10 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.4 $
  */
 public class DatabaseAliases {
-    private static final Map passwords = 
+	private static final Map passwords = 
     	Collections.synchronizedMap(new HashMap());
     private ExecuteParams wiParams;
     private String logType = "";
@@ -202,7 +202,7 @@ public class DatabaseAliases {
                 if (!handler.isConnected() && forceConnect) {
                     connect(handler, node);
                 }
-                handler.connectionOpenOrClose(wiParams, true);
+                handler.runSqlOnOpenOrCloseConnection(wiParams, true);
                 if (wiParams != null && wiParams.getWIMap() != null) {
                     WIMap wiMap = wiParams.getWIMap();
                     String maxrows = wiMap.get("tmp.dbmaxrows." + alias).trim();
@@ -253,8 +253,12 @@ public class DatabaseAliases {
             DatabaseHandler handler = node.getDatabase();
             if (handler != null) {
             	if (type.equals("close")) {
-                    handler.connectionOpenOrClose(wiParams, false);
+                    handler.runSqlOnOpenOrCloseConnection(wiParams, false);
             		handler.close();
+            		for (DatabaseHandler dbhClone : handler.getCloneList()) {
+            			dbhClone.runSqlOnOpenOrCloseConnection(wiParams, false);
+            			dbhClone.close();
+					}
             	}
             	if (type.equals("autocommit")) {
             		handler.setInTransaction(!autocommit);

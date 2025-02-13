@@ -24,15 +24,15 @@ import java.util.Map;
 
 import br.com.webinside.runtime.database.ErrorCode;
 import br.com.webinside.runtime.net.ClientSocket;
+import br.com.webinside.runtime.util.CrossContextFactory;
 import br.com.webinside.runtime.util.ErrorLog;
-import br.com.webinside.runtime.util.MjavaRepository;
 import br.com.webinside.runtime.util.StringA;
 
 /**
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ConnectionMjavaPort {
     private String srvHost;
@@ -72,7 +72,7 @@ public class ConnectionMjavaPort {
      * @return DOCUMENT ME!
      */
     protected String getVersionCode() {    	
-        synchronized (MjavaRepository.mjavaStaticHosts) {
+        synchronized (CrossContextFactory.mjavaStaticHosts()) {
             errorMsg = "";
             String response = "";
             boolean status = getConnection();
@@ -85,7 +85,7 @@ public class ConnectionMjavaPort {
     }
 
     private String getVersionCodePriv() {
-    	Map staticHosts = MjavaRepository.mjavaStaticHosts;
+    	Map staticHosts = CrossContextFactory.mjavaStaticHosts();
         try {
             tmpSocket.writeln("<mjava release\"/>");
             String resp = tmpSocket.readln();
@@ -113,7 +113,7 @@ public class ConnectionMjavaPort {
      * @return DOCUMENT ME!
      */
     protected int getPort(String user, String pass) {
-        synchronized (MjavaRepository.mjavaStaticHosts) {
+        synchronized (CrossContextFactory.mjavaStaticHosts()) {
             errorMsg = "";
             int response = ErrorCode.MJAVA_CONNECTIONERROR;
             boolean status = getConnection();
@@ -129,7 +129,7 @@ public class ConnectionMjavaPort {
         int response = ErrorCode.MJAVA_COMMUNICATIONERROR;
         user = StringA.getXml(user);
         pass = StringA.getXml(pass);
-    	Map staticHosts = MjavaRepository.mjavaStaticHosts;    	
+    	Map staticHosts = CrossContextFactory.mjavaStaticHosts();    	
         try {
             tmpSocket.writeln("<mjava user=\"" + user + "\" pass=\"" + pass
                 + "\"/>");
@@ -158,7 +158,7 @@ public class ConnectionMjavaPort {
     }
 
     private boolean getConnection() {
-    	Map staticHosts = MjavaRepository.mjavaStaticHosts;    	
+    	Map staticHosts = CrossContextFactory.mjavaStaticHosts();    	
         try {
             Map properties = (Map) staticHosts.get(srvHost + ":" + srvPort);
             if (properties != null) {

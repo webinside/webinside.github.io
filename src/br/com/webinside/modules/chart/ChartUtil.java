@@ -88,7 +88,7 @@ public class ChartUtil {
 				} catch (UnsupportedEncodingException e) {
 					// ignorado
 				}
-                dcd.addValue(new Double(sValue), colName, categoryNames[i - 1]);
+                dcd.addValue(Double.valueOf(sValue), colName, categoryNames[i - 1]);
             }
         }
         return dcd;
@@ -144,7 +144,7 @@ public class ChartUtil {
                 ctx.get(normalize(objectId + "[" + i + "]." + columnNames[2]));
 
             //adicione ao dataset o valor correspondente à série de uma categoria
-            dcd.addValue(new Double(serieValue), serieName, categoryName);
+            dcd.addValue(Double.valueOf(serieValue), serieName, categoryName);
         }
         return dcd;
     }
@@ -189,7 +189,7 @@ public class ChartUtil {
             //coluna do objeto
             String categoryValue =
                 ctx.get(normalize(objectId + "[" + i + "]." + columnNames[1]));
-            data.setValue(categoryName, new Double(categoryValue));
+            data.setValue(categoryName, Double.valueOf(categoryValue));
         }
         return data;
     }

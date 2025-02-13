@@ -25,9 +25,10 @@ import br.com.webinside.runtime.integration.DatabaseHandler;
 import br.com.webinside.runtime.integration.IntFunction;
 import br.com.webinside.runtime.integration.Producer;
 import br.com.webinside.runtime.integration.ProducerParam;
+import br.com.webinside.runtime.util.CrossContext;
+import br.com.webinside.runtime.util.CrossContextFactory;
 import br.com.webinside.runtime.util.Crypto;
 import br.com.webinside.runtime.util.I18N;
-import br.com.webinside.runtime.util.SingleSignOnRepository;
 import br.com.webinside.runtime.util.StringA;
 import br.com.webinside.runtime.util.WIMap;
 
@@ -35,7 +36,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.11 $
  */
 public class ExecuteLogin {
     private ExecuteParams wiParams;
@@ -76,12 +77,10 @@ public class ExecuteLogin {
         if (wiParams.isJspInclude()) {
         	return true;
         }
-        String addr = wiParams.getHttpRequest().getRemoteAddr();
+        String addr = wiParams.getHttpRequest().getRequestedSessionId();
         checkSingleSignOn(wiMap, addr);
         String logip = wiMap.get("pvt.wilogin");
-        if (logip.equals(addr)) {
-            return true;
-        }
+        if (logip.equals(addr)) return true;
         if (!doLogin) {
         	if (!wiParams.getPage().getNoLogin().equals("ON")) {
                 invalidLogin();
@@ -104,7 +103,7 @@ public class ExecuteLogin {
         String dbalias = project.getLoginDatabase();
         DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
         if ((db == null) || (!db.isConnected())) {
-            EngFunction.databaseError(wiParams, dbalias);
+            RtmFunction.databaseError(wiParams, dbalias);
             return false;
         }
         db.setCharFilter(project.getLoginSqlFilter(), "");
@@ -132,7 +131,7 @@ public class ExecuteLogin {
                     ok = true;
                 }
                 if (ok) {
-                    addr = wiParams.getHttpRequest().getRemoteAddr();
+                    addr = wiParams.getHttpRequest().getRequestedSessionId();
                     wiMap.put("pvt.wilogin", addr);
                     wiMap.remove("pvt.login.accept");
                     // populando colunas adicionais
@@ -165,7 +164,7 @@ public class ExecuteLogin {
         prod.setWIMap(wiParams.getWIMap());
         DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
         if (db == null) {
-            EngFunction.databaseError(wiParams, dbalias);
+            RtmFunction.databaseError(wiParams, dbalias);
             return false;
         }
         if (!db.isConnected()) {
@@ -173,7 +172,7 @@ public class ExecuteLogin {
             return false;
         }
         WIMap wiMap = wiParams.getWIMap();
-        wiMap.put("pvt.wilogin", wiParams.getHttpRequest().getRemoteAddr());
+        wiMap.put("pvt.wilogin", wiParams.getHttpRequest().getRequestedSessionId());
         wiMap.remove("pvt.login.accept");
     	IntFunction.loginRoles(wiParams);
         return true;
@@ -190,11 +189,12 @@ public class ExecuteLogin {
         }	
         String loginPage = project.getLoginPage();
         if (!loginPage.trim().equals("")) {
+        	if (!loginPage.endsWith(".wsp")) loginPage += ".wsp";
         	WIMap wiMap = wiParams.getWIMap();
         	wiMap.remove("tmp.msgsecurevar");
-            wiParams.sendRedirect(loginPage + ".wsp", wiMap, true);
+            wiParams.sendRedirect(loginPage, wiMap, true);
         } else {
-            new Export(wiParams).showMessage(i18n("Login Inválido"));
+            new RtmExport(wiParams).showMessage(i18n("Login Inválido"));
         }
     }
 
@@ -203,10 +203,12 @@ public class ExecuteLogin {
     }
     
     private void checkSingleSignOn(WIMap wiMap, String addr) {
-        String ssoId = EngFunction.getSingleSignOnId(wiParams); 
+        String ssoId = RtmFunction.getSingleSignOnId(wiParams); 
         if (!ssoId.equals("")) {
+        	Map map = null;        	
         	String ssoVar = wiMap.get("pvt.wilogin.singlesignon");
-        	Map map = SingleSignOnRepository.getToken(ssoId + "-" + addr);
+        	CrossContext cross = CrossContextFactory.getInstance();
+        	if (cross != null) map = cross.getSSO(ssoId + "-" + addr);
         	if (map != null) {
         		wiMap.put("pvt.wilogin", addr);
         		wiMap.put("pvt.wilogin.singlesignon", "true");

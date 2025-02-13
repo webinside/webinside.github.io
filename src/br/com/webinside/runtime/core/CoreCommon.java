@@ -18,6 +18,9 @@
 package br.com.webinside.runtime.core;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import br.com.webinside.runtime.component.AbstractActionElement;
 import br.com.webinside.runtime.component.Database;
 import br.com.webinside.runtime.component.Databases;
@@ -101,12 +104,13 @@ public abstract class CoreCommon implements CoreCommonInterface {
         if (engineLog.trim().equals("")) {
             return;
         }
-        String msg = wiParams.getPage().getId();
-        msg += ("[" + element.getDescription() + "]: ");
         String logDir = wiParams.getErrorLog().getParentDir();
         LogsGenerator log = LogsGenerator.getInstance(logDir, "engine.log");
-        String page = msg + (new Date().getTime() - initialTime) + " ms";
-        log.write(page, null, null, null, null);
+        Map<String, String> logAttrs = new LinkedHashMap<String, String>();
+		logAttrs.put("PAGE", wiParams.getPage().getId());
+		logAttrs.put("ELEMENT", element.getDescription());
+		logAttrs.put("TIME", (new Date().getTime() - initialTime) + " ms");
+        log.write(logAttrs, null);
     }
     
     /**

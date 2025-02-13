@@ -20,9 +20,11 @@ package br.com.webinside.runtime.integration;
 import java.io.File;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -47,10 +49,11 @@ import br.com.webinside.runtime.util.WIVersion;
  * DOCUMENT ME!
  * 
  * @author $author$
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.8 $
  */
 public class DatabaseHandler extends DatabaseManager {
 
+    private List<DatabaseHandler> cloneList;
 	private AbstractProject project;
 	private String id = "";
 	private String sqlFilterIn = "";
@@ -74,6 +77,7 @@ public class DatabaseHandler extends DatabaseManager {
 	public DatabaseHandler(String id, String type, String alias, String user,
 			String pass) {
 		super(type, alias, user, pass);
+    	cloneList = new ArrayList<DatabaseHandler>();
 		if (id != null) {
 			this.id = id;
 		}
@@ -87,19 +91,23 @@ public class DatabaseHandler extends DatabaseManager {
 	 */
 	public DatabaseHandler(String id, DatabaseManager database) {
 		super(database);
+    	cloneList = new ArrayList<DatabaseHandler>();
 		if (id != null) {
 			this.id = id;
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	public DatabaseHandler cloneMe() {
+		return cloneMe(true);
+	}
+	
+	public DatabaseHandler cloneMe(boolean autoClose) {
 		DatabaseHandler clone = new DatabaseHandler(id, this);
 		clone.setLog(logType);
+		if (autoClose) {
+			cloneList.add(clone);
+		}	
+		clone.runSqlOnOpenOrCloseConnection(ExecuteParams.get(), true);
 		return clone;
 	}
 
@@ -136,6 +144,15 @@ public class DatabaseHandler extends DatabaseManager {
 		return executedSql;
 	}
 
+	/**
+	 * DOCUMENT ME!
+	 * 
+	 * @return DOCUMENT ME!
+	 */
+	public List<DatabaseHandler> getCloneList() {
+		return cloneList;
+	}
+	
 	/**
 	 * DOCUMENT ME!
 	 * 
@@ -190,13 +207,15 @@ public class DatabaseHandler extends DatabaseManager {
 		query = filterQuery(wiMap, query);
 	    String tname = Thread.currentThread().getName();
         String antname = StringA.piece(StringA.piece(tname, "^", 2), "-", 3);
-        String queryThread = query.trim() + " - " + antname.trim();
+        String auxquery = query.trim(); 
+        if (auxquery.length() > 1500) auxquery = auxquery.substring(0, 1500) + "...";
+        String queryThread = auxquery + " - " + antname.trim();
 	    Function.setThreadName(threadTitle() + ", Query:" + queryThread);
 		if (type.equals("JAVA")) {
 			String clazz = StringA.piece(query, ":", 1).trim();
 			String params = StringA.piece(query, ":", 2, 0).trim();
 			Class c = getUserClass(wiMap, clazz);
-			resp = (ResultSetJava) c.newInstance();
+			resp = (ResultSetJava) c.getConstructor().newInstance();
 			((ResultSetJava)resp).execute(project, wiMap, params);
 		} else if (type.equals("MJAVA")) {
 			if (getVersion().startsWith(WIVersion.MJAVAVERSION)) {
@@ -278,7 +297,9 @@ public class DatabaseHandler extends DatabaseManager {
 		query = filterQuery(wiMap, query);
 	    String tname = Thread.currentThread().getName();
         String antname = StringA.piece(StringA.piece(tname, "^", 2), "-", 3);
-        String queryThread = query.trim() + " - " + antname.trim();
+        String auxquery = query.trim(); 
+        if (auxquery.length() > 1500) auxquery = auxquery.substring(0, 1500) + "...";
+        String queryThread = auxquery + " - " + antname.trim();
 	    Function.setThreadName(threadTitle() + ", Update:" + queryThread);    
 		if (type.equals("MJAVA")) {
 			if (getVersion().startsWith(WIVersion.MJAVAVERSION)) {
@@ -308,6 +329,16 @@ public class DatabaseHandler extends DatabaseManager {
 		return resp;
 	}
 
+	public int executeSqlInsert(String query, WIMap wiMap) throws Exception {
+		int key = 0;
+		ConnectionSql dbSql = (ConnectionSql)getDatabaseConnection();
+		dbSql.returnGeneratedKeys();
+		executeUpdate(query, wiMap);
+		ResultSet rsKey = dbSql.getGeneratedKeys();
+		if (rsKey.next() > 0) key = Function.parseInt(rsKey.column(1));
+		return key;
+	}
+	
 	/**
 	 * DOCUMENT ME!
 	 * 
@@ -437,8 +468,7 @@ public class DatabaseHandler extends DatabaseManager {
 			ExecuteParams wiParams = ExecuteParams.get();
 			DatabaseAliases aliases = wiParams.getDatabaseAliases();
 			// Se a conexão não for clonada e der erro o rollback remove o log
-			DatabaseHandler handler = aliases.get(database).cloneMe();
-			connectionOpenOrClose(wiParams, true);
+			DatabaseHandler handler = aliases.get(database).cloneMe(false);
 			String debug = wiMap.get("pvt.updatelog.debugdir").trim();
 			try {
 				int h = handler.connect();
@@ -465,7 +495,7 @@ public class DatabaseHandler extends DatabaseManager {
 		            }
 				}
 			} finally {
-				connectionOpenOrClose(wiParams, false);
+				runSqlOnOpenOrCloseConnection(wiParams, false);
 				handler.close();
 			}
 			wiMap.remove("wi.db.id");
@@ -508,12 +538,10 @@ public class DatabaseHandler extends DatabaseManager {
 		}
 		String logDir = getErrorLog().getParentDir();
 		LogsGenerator log = LogsGenerator.getInstance(logDir, "sql.log");
-		String ip = wiMap.get("wi.session.ip");
-		String page = wiMap.get("wi.jsp.filename");
-		String tmsg = "select";
-		if (!select) {
-			tmsg = "update";
-		}
+        Map<String, String> logAttrs = new LinkedHashMap<String, String>();
+		logAttrs.put("PAGE", wiMap.get("wi.jsp.filename"));
+		logAttrs.put("IP", wiMap.get("wi.session.ip"));
+		String tmsg = select ? "select" : "update";
 		DatabaseConnection gen = getDatabaseConnection();
 		String alias = gen.getAlias();
 		String text = "DB: " + alias + " - Type: " + tmsg;
@@ -526,7 +554,7 @@ public class DatabaseHandler extends DatabaseManager {
 	        	detail += psMap.toString();
 	        }	
 		}
-		log.write(page, null, ip, text, detail);
+		log.write(logAttrs, text, detail);
 	}
 
 	private void sqlValid() {
@@ -580,7 +608,7 @@ public class DatabaseHandler extends DatabaseManager {
 		return getClass().getClassLoader().loadClass(className);
 	}
 	
-    public void connectionOpenOrClose(ExecuteParams wiParams, boolean open) {
+    public void runSqlOnOpenOrCloseConnection(ExecuteParams wiParams, boolean open) {
     	String var = "open";
     	if (!open) var = "close";
     	if (wiParams != null && wiParams.getWIMap() != null) {
@@ -648,5 +676,5 @@ public class DatabaseHandler extends DatabaseManager {
     	}
     	return auxMap;
     }
-    
+        
 }

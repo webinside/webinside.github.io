@@ -32,6 +32,7 @@ import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.ImageOutputStream;
 
 import br.com.webinside.runtime.core.ExecuteParams;
+import br.com.webinside.runtime.core.ExecuteParamsEnum;
 import br.com.webinside.runtime.exception.UserException;
 import br.com.webinside.runtime.integration.InterfaceConnector;
 import br.com.webinside.runtime.integration.InterfaceParameters;
@@ -107,7 +108,7 @@ public class Resize implements InterfaceConnector, InterfaceParameters {
     		FileUpload fu = wiParams.getFileUpload();
     		if (fu == null) {
     			fu = new FileUpload();
-        		wiParams.setParameter(ExecuteParams.FILE_UPLOAD, fu);
+        		wiParams.setParameter(ExecuteParamsEnum.FILE_UPLOAD, fu);
     		}
     		fu.addExtraFile("resize", new File(dest));
         }

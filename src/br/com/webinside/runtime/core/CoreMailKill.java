@@ -33,7 +33,7 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.4 $
  */
 public class CoreMailKill extends CoreCommon {
 
@@ -56,20 +56,15 @@ public class CoreMailKill extends CoreCommon {
      * DOCUMENT ME!
      */
     public void execute() {
-        if (!isValidCondition()) {
-            return;
-        }
+        if (!isValidCondition()) return;
         try {
         	store = null;
         	mailKill();
+        	if (store != null) {
+        		store.close();
+        	}
         } catch (MessagingException err) {
         	wiParams.getErrorLog().write(getClass().getName(), "execute", err);
-        } finally {
-        	if (store != null) { 
-        		try {
-					store.close();
-				} catch (MessagingException e) { }
-        	}
         }
     }    
         
@@ -82,7 +77,7 @@ public class CoreMailKill extends CoreCommon {
         				host.getProtocol().startsWith("IMAP"))) {
         	store = IntFunction.getStoreConnection(wiMap, host);
         	if (store == null) {
-                EngFunction.hostError(wiParams, kill.getHostId());
+                RtmFunction.hostError(wiParams, kill.getHostId());
         		return;
         	}
         }

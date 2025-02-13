@@ -87,21 +87,21 @@ public class BarChart extends WICategoryChart {
         if (draw3d) {
             if (stacked) {
                 chart = ChartFactory.createStackedBarChart3D(title, xLabel, yLabel,
-                        getCategoryDataset(), getPlotOrientation(), true, true,
+                        getCategoryDataset(), getPlotOrientation(), hasLegend(), true,
                         false);
             } else {
                 chart = ChartFactory.createBarChart3D(title, xLabel, yLabel,
-                        getCategoryDataset(), getPlotOrientation(), true, true,
+                        getCategoryDataset(), getPlotOrientation(), hasLegend(), true,
                         false);
             }
         } else {
             if (stacked) {
                 chart = ChartFactory.createStackedBarChart(title, xLabel, yLabel,
-                        getCategoryDataset(), getPlotOrientation(), true, true,
+                        getCategoryDataset(), getPlotOrientation(), hasLegend(), true,
                         false);
             } else {
                 chart = ChartFactory.createBarChart(title, xLabel, yLabel,
-                        getCategoryDataset(), getPlotOrientation(), true, true,
+                        getCategoryDataset(), getPlotOrientation(), hasLegend(), true,
                         false);
             }
         }

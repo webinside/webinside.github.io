@@ -62,10 +62,10 @@ public class PieChart extends WIChart {
      */
     public void createChart() {
         if (draw3d) {
-            chart = ChartFactory.createPieChart3D(title, getPieDataset(), true,
+            chart = ChartFactory.createPieChart3D(title, getPieDataset(), hasLegend(),
                     false, false);
         } else {
-            chart = ChartFactory.createPieChart(title, getPieDataset(), true,
+            chart = ChartFactory.createPieChart(title, getPieDataset(), hasLegend(),
                     false, false);
         }
     	PiePlot plot = (PiePlot) chart.getPlot();

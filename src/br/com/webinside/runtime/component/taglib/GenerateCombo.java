@@ -22,14 +22,15 @@ import java.io.PrintWriter;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
-import br.com.webinside.runtime.core.EngFunction;
 import br.com.webinside.runtime.core.ExecuteParams;
+import br.com.webinside.runtime.core.ExecuteParamsEnum;
+import br.com.webinside.runtime.core.RtmFunction;
 
 /**
  * Classe que implementa um TagLib para gerar uma Combo.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.3 $
  */
 public class GenerateCombo extends TagSupport {
 
@@ -48,17 +49,14 @@ public class GenerateCombo extends TagSupport {
         if (obj instanceof ExecuteParams) {
             ExecuteParams wiParams = (ExecuteParams) obj;
             PrintWriter outWriter = wiParams.getWriter(false);
-            if (wiParams.getRequestAttribute("wiGrid") == null) {
-	            wiParams.setParameter(ExecuteParams.OUT_WRITER, 
-	            		pageContext.getOut());
-            }
+            wiParams.setParameter(ExecuteParamsEnum.OUT_WRITER, pageContext.getOut());
             try {
-                EngFunction.generateCombo(wiParams, getName());                
+                RtmFunction.generateCombo(wiParams, getName());                
             } catch (Exception err) {
             	wiParams.getErrorLog().write("GenerateCombo", "taglib", err);
             	throw new JspException(err);
             }
-            wiParams.setParameter(ExecuteParams.OUT_WRITER, outWriter);
+            wiParams.setParameter(ExecuteParamsEnum.OUT_WRITER, outWriter);
         }
         return SKIP_BODY;
     }

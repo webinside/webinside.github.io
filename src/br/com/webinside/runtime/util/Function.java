@@ -17,9 +17,8 @@
 
 package br.com.webinside.runtime.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -30,6 +29,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,11 +45,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
 /**
  * Classe com funções diversas do WI
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.13 $
  *
  * @since 3.0
  */
@@ -348,22 +352,17 @@ public class Function {
         if (!fromFile.isFile() || toFile.exists()) {
             return false;
         }
-        if (createDir) {
-            toFile.getParentFile().mkdirs();
+        if ((createDir) && (!toFile.getParentFile().exists())) {
+        	toFile.getParentFile().mkdirs();
+            new File(toFile.getParent()).mkdirs();
         }
-        byte[] trecho = new byte[10240];
-        int quant = 0;
         try {
-            BufferedInputStream in =
-                new BufferedInputStream(new FileInputStream(from));
-            BufferedOutputStream out =
-                new BufferedOutputStream(new FileOutputStream(to));
-            while ((quant = in.read(trecho)) > -1) {
-                out.write(trecho, 0, quant);
-            }
-            out.close();
-            in.close();
-        } catch (IOException err) {
+	        FileChannel inChannel = new FileInputStream(fromFile).getChannel();
+	        FileChannel outChannel = new FileOutputStream(toFile).getChannel();
+	        outChannel.transferFrom(inChannel, 0, inChannel.size());
+	        Function.closeStream(inChannel);
+	        Function.closeStream(outChannel);
+        } catch (Exception err) {
             err.printStackTrace(System.err);
             return false;
         }
@@ -459,7 +458,8 @@ public class Function {
     
     public static String rndTmpFolder(String prefix) {
     	String tmp = tmpDir();
-    	return tmp + "/" + prefix + "-" + randomKey().toLowerCase();
+        if (!tmp.endsWith("/"))  tmp += "/";
+    	return tmp + prefix + "-" + randomKey().toLowerCase();
     }
 
     /**
@@ -587,13 +587,7 @@ public class Function {
                 }
                 FileOutputStream fout = new FileOutputStream(file);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                byte[] b = new byte[1024];
-                if (fis.available() > 0) {
-                    int len = 0;
-                    while ((len = fis.read(b)) > 0) {
-                        baos.write(b, 0, len);
-                    }
-                }
+                copyStream(fis, baos);
                 fis.close();
                 fout.write(baos.toByteArray());
                 baos.close();
@@ -785,18 +779,7 @@ public class Function {
     throws IOException {
         FileInputStream fis = new FileInputStream(file);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        byte[] b = new byte[1024];
-        int count = 0;
-        while ((count = fis.available()) > 0) {
-            if (count < 1024) {
-                b = new byte[count];
-            }
-            int len = fis.read(b);
-            if (len > 0) {
-                baos.write(b, 0, len);
-            }
-        }
+        copyStream(fis, baos);
         fis.close();
         baos.close();
         return baos.toByteArray();
@@ -806,14 +789,37 @@ public class Function {
      * Copia os dados de um inputStream para um outputStream
      * @param is inputStream a ser copiado
      * @param os outputStrem
+     * retorna true 
      * @throws IOException
      */
-	public static void copyStream(InputStream is, OutputStream os)
-			throws IOException {
-		byte[] buffer = new byte[1000];
-		int length;
-		while ((length = is.read(buffer)) >= 0) {
-			os.write(buffer, 0, length);
+	public static long copyStream(InputStream in, OutputStream out) throws IOException {
+		int BUFFER_SIZE = 8 * 1024;
+	    long transferred = 0;
+	    int read;
+	    byte[] buffer = new byte[BUFFER_SIZE];
+	    while ((read = in.read(buffer, 0, BUFFER_SIZE)) >= 0) {
+	        out.write(buffer, 0, read);
+	        transferred += read;
+	    }
+		out.flush();
+	    return transferred;
+	}
+	
+	public static void closeStream(Closeable stream) {
+		try {
+			if (stream != null) stream.close();
+		} catch (Exception e) {
+			// ignorado
+		}
+	}
+	
+	public static void sendFile(File file, OutputStream out) {
+		try {
+			InputStream in = new FileInputStream(file);
+			copyStream(in, out);
+			in.close();
+		} catch (Exception e) {
+			// ignorado
 		}
 	}
 	
@@ -845,4 +851,48 @@ public class Function {
 		}
 	}
 	
+	public static String getStackTrace() {
+		StringBuilder str = new StringBuilder();
+		StackTraceElement[] elements = Thread.currentThread().getStackTrace();
+		for (int i = 0; i < elements.length; i++) {
+			if (i > 0) str.append("\n");
+			str.append(elements[i]);
+		}
+		return str.toString();
+	}
+	
+	public static void decodeJSON(WIMap wiMap, String json, String prefix) {
+		if (json == null || json.trim().equals("") || json.trim().equals("null")) return;
+		Object obj = JSONValue.parse(json.trim());
+		if (obj != null) {
+			parseDecodeJSON(wiMap, obj, prefix);
+		}
+	}
+	
+	private static void parseDecodeJSON(WIMap wiMap, Object obj, String prefix) {
+		if (obj instanceof JSONObject) {
+			JSONObject jobj = (JSONObject) obj;
+			for (Object key : jobj.keySet()) {
+				Object value = jobj.get(key);
+				String auxPrefix = (String) key;
+				if (!prefix.equals("")) auxPrefix = prefix + "." + key;
+				parseDecodeJSON(wiMap, value, auxPrefix);
+			}
+		} else if (obj instanceof JSONArray) {
+			JSONArray jarr = (JSONArray)obj;
+			int count = 1;
+			for (Iterator iterator = jarr.iterator(); iterator.hasNext();) {
+				Object object = (Object) iterator.next();
+				if (prefix.equals("")) prefix = "tmp.json";
+				if (prefix.endsWith("]")) prefix += ".json";
+				parseDecodeJSON(wiMap, object, prefix + "[" + count + "]");
+				count++;
+			}
+		} else {
+			if (!prefix.equals("")) {
+				wiMap.put(prefix, obj.toString());
+			}
+		}
+	}
+		
 }

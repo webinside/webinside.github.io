@@ -38,7 +38,7 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class WebServiceWsdl {
     private WebServiceParams params;
@@ -69,8 +69,8 @@ public class WebServiceWsdl {
      * @param request DOCUMENT ME!
      */
     public void Wsdl(PrintWriter out, HttpServletRequest request) {
-        String srvname = EngFunction.getServerName(request);
-        int serverPort = EngFunction.getServerPort(request);        
+        String srvname = RtmFunction.getServerName(request);
+        int serverPort = RtmFunction.getServerPort(request);        
         String prot = "http://";
         if (serverPort == 443) {
             prot = "https://";

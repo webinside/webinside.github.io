@@ -36,7 +36,7 @@ import br.com.webinside.runtime.util.WIMap;
  * Classe que recupera uma variável do wi.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.11 $
  */
 public class Out extends TagSupport {
 
@@ -105,7 +105,6 @@ public class Out extends TagSupport {
     	aux.remove("wi.date.");
     	aux.remove("wi.header.");
     	aux.remove("wi.request.");
-    	aux.remove("wi.server.");
     	aux.remove("wi.i18n");
     	aux.remove("wi.headers");
     	aux.remove("wi.functions");
@@ -129,15 +128,16 @@ public class Out extends TagSupport {
 		out.print(aux.getAsText("stmp.*", true));
 		out.print(aux.getAsText("tmp.*", true));
 		out.print(aux.getAsText("grid.*", true));
-		if (wiParams.getProject().isRequestScope()) {
-			out.print(aux.getAsText("", true));
-		}
 		out.println("</pre>");
 		out.println("<pre id=\"wioutPvt\">");
-		if (!wiParams.getProject().isRequestScope()) {
-			out.print(aux.getAsText("", true));
-		}
-		out.print(aux.getAsText("pvt.*", true));
+		WIMap aux2 = aux.cloneMe();
+		aux2.remove("wi.");
+		aux2.remove("app.");
+		aux2.remove("tmp.");
+		aux2.remove("stmp.");
+		aux2.remove("grid.");
+		aux2.remove("combo.");
+		out.print(aux2.getAsText("*", true));
 		out.println("</pre>");
 		out.println("<pre id=\"wioutWi\">");
 		out.print(aux.getAsText("wi.*", true));

@@ -32,7 +32,7 @@ import java.util.TreeSet;
  * no Map interno um novo WIMap tendo como chave "tmp." e nele a chave "nome".
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.7 $
  */
 public class WIMap implements Serializable {
 	
@@ -207,13 +207,20 @@ public class WIMap implements Serializable {
     }
 
     /**
-     * Armazena um valor numa chave.
+     * Armazena um valor numa chave ou cria um array.
      *
      * @param key a chave a ser utilizada.
      * @param value o valor a ser armazenado.
      */
     public void put(String key, String value) {
-        putObj(key, value);
+    	if (key.toLowerCase().trim().endsWith(".add()")) {
+    		String var = StringA.mid(key, 0, key.lastIndexOf(".") - 1).trim();
+    		int size = Function.parseInt(get(var + ".size()")) + 1;
+    		putObj(var + "[" + size + "].value", value);
+    		putObj(var + ".size()", size + "");
+    	} else {
+    		putObj(key, value);
+    	}
     }
 
     /**
@@ -225,7 +232,7 @@ public class WIMap implements Serializable {
     public void put(String key, int value) {
         putObj(key, value + "");
     }
-
+        
     /**
      * Retorna o valor de uma chave como um Object.
      *
@@ -543,9 +550,7 @@ public class WIMap implements Serializable {
      * @return o WIMap como texto.
      */
     public String getAsText(String mask, boolean forHtml) {
-        if (mask == null) {
-            mask = "*";
-        }
+        if (mask == null) mask = "*";
         StringA response = new StringA();
         WIMap aux = this;
         boolean onlyvars = false;

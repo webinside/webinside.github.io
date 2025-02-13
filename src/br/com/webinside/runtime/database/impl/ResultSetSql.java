@@ -31,13 +31,14 @@ import java.util.zip.InflaterInputStream;
 import br.com.webinside.runtime.database.DatabaseConnection;
 import br.com.webinside.runtime.database.ResultSet;
 import br.com.webinside.runtime.util.ErrorLog;
+import br.com.webinside.runtime.util.Function;
 import br.com.webinside.runtime.util.StringA;
 
 /**
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.8 $
  */
 public class ResultSetSql implements ResultSet {
     private java.sql.ResultSet rset;
@@ -139,7 +140,7 @@ public class ResultSetSql implements ResultSet {
                 if (log != null) {
                     log.write("ResultSetSQL", "Next(SQL)", err);
                 }
-        		if (parent.getType().equals("CACHE")) {
+        		if (parent.isIntersys()) {
             		parent.setValid(false);
         		}	
         	}
@@ -338,7 +339,7 @@ public class ResultSetSql implements ResultSet {
                 if (log != null) {
                     log.write("ResultSetSQL", "Column(SQL)", err);
                 }
-        		if (parent.getType().equals("CACHE")) {
+        		if (parent.isIntersys()) {
             		parent.setValid(false);
         		}	
         	}
@@ -351,8 +352,8 @@ public class ResultSetSql implements ResultSet {
     		StringBuffer resp = new StringBuffer();
     		try { 
 	    		InputStream in = rset.getAsciiStream(index);
-	    		int c;
-	    		byte[] buffer = new byte[10240];
+	    		int c = 0;
+	    		byte[] buffer = new byte[8 * 1024];
 	    		while ((c = in.read(buffer)) > -1) {
 	    			resp.append(new String(buffer, 0, c));
 	    		}
@@ -376,11 +377,13 @@ public class ResultSetSql implements ResultSet {
     }	
     
     private boolean isRestricted(String restrict, String type) {
-        if (restrict == null) {
-            restrict = "";
+        if (restrict == null) restrict = "";
+        if (type == null) type = "";
+        if (parent.getType().equals("SQLITE") && type.equals("TEXT")) {
+        	return false;
         }
-        if (type == null) {
-            type = "";
+        if (parent.isIntersys() && type.indexOf("CHAR") > -1) {
+        	return false;
         }
         if (!restrict.equals("")) {
             int cont = StringA.count(restrict.toLowerCase(), ',');
@@ -451,23 +454,14 @@ public class ResultSetSql implements ResultSet {
             return -1;
         }
         try {
-            byte[] bt = new byte[10240];
             InputStream in = rset.getBinaryStream(index);
-            if (in == null) {
-                return 0;
-            }
-            if (zip) {
-            	in = new InflaterInputStream(in);
-            }
-            boolean vazio = true;
+            if (in == null) return 0;
+            if (zip) in = new InflaterInputStream(in);
+            boolean exec = false;
             try {
-                int tam = 0;
-                while ((tam = in.read(bt)) > 0) {
-                    vazio = false;
-                    out.write(bt, 0, tam);
-                    out.flush();
-                }
-                in.close();
+            	long size = Function.copyStream(in, out);
+            	exec = size > 0;
+            	Function.closeStream(in);
             } catch (IOException ioerr) {
                 ErrorLog log = parent.getErrorLog();
                 if (log != null) {
@@ -475,12 +469,9 @@ public class ResultSetSql implements ResultSet {
                 }
                 return -1;
             }
-            if (vazio) {
-                return 0;
-            }
-            return 1;
+            return (exec ? 1 : 0);
         } catch (SQLException err) {
-        	if (parent != null && parent.getType().equals("CACHE")) {
+        	if (parent != null && parent.isIntersys()) {
         		parent.setValid(false);
         	}
             return -1;

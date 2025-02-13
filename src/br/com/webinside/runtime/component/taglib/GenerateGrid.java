@@ -22,14 +22,15 @@ import java.io.PrintWriter;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
-import br.com.webinside.runtime.core.EngFunction;
 import br.com.webinside.runtime.core.ExecuteParams;
+import br.com.webinside.runtime.core.ExecuteParamsEnum;
+import br.com.webinside.runtime.core.RtmFunction;
 
 /**
  * Classe que implementa um TagLib para gerar um Grid.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.3 $
  */
 public class GenerateGrid extends TagSupport {
 
@@ -48,18 +49,15 @@ public class GenerateGrid extends TagSupport {
         if (obj instanceof ExecuteParams) {
             ExecuteParams wiParams = (ExecuteParams) obj;
             PrintWriter outWriter = wiParams.getWriter(false);
-            if (wiParams.getRequestAttribute("wiGrid") == null) {
-	            wiParams.setParameter(ExecuteParams.OUT_WRITER, 
-	            		pageContext.getOut());
-            }
+            wiParams.setParameter(ExecuteParamsEnum.OUT_WRITER, pageContext.getOut());
             try {
-                EngFunction.generateGrid(wiParams, getName());                
+                RtmFunction.generateGrid(wiParams, getName());                
             } catch (Exception err) {
             	wiParams.getErrorLog().write("GenerateGrid", "taglib", err);
             	wiParams.removeRequestAttribute("wiException");
                 throw new JspException(err);
             }
-            wiParams.setParameter(ExecuteParams.OUT_WRITER, outWriter);
+            wiParams.setParameter(ExecuteParamsEnum.OUT_WRITER, outWriter);
         }
         return SKIP_BODY;
     }

@@ -2,6 +2,7 @@ package br.com.webinside.runtime.validation;
 
 import br.com.webinside.runtime.exception.UserException;
 import br.com.webinside.runtime.integration.AbstractValidation;
+import br.com.webinside.runtime.util.Function;
 import br.com.webinside.runtime.util.WIMap;
 
 public class Length extends AbstractValidation {
@@ -14,8 +15,9 @@ public class Length extends AbstractValidation {
 		} else if (args.length == 1) {
 			return checkMax(wiMap, var, args[0]);
 		} else {
-			int min = Integer.parseInt(args[0]);
+			int min = Function.parseInt(args[0]);
 			if (wiMap.get(var).length() < min) {
+				wiMap.remove(var);
 				return getMessage("length_min", min);
 			}
 			return checkMax(wiMap, var, args[1]);
@@ -23,8 +25,9 @@ public class Length extends AbstractValidation {
 	}
 	
 	private String checkMax(WIMap wiMap, String var, String value) {
-		int max = Integer.parseInt(value);
+		int max = Function.parseInt(value);
 		if (wiMap.get(var).length() > max) {
+			wiMap.remove(var);
 			return getMessage("length_max", max);
 		}
 		return "";

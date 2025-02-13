@@ -28,7 +28,7 @@ import br.com.webinside.runtime.util.*;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class EventCoreUpdate {
     private ExecuteParams wiParams;
@@ -123,7 +123,7 @@ public class EventCoreUpdate {
         DatabaseHandler db) {
         ProducerParam prod = new ProducerParam();
         prod.setWIMap(auxhash);
-        db.setCharFilter(EngFunction.cleanSpace(update.getSqlFilter()), "");
+        db.setCharFilter(RtmFunction.cleanSpace(update.getSqlFilter()), "");
         int result = -1;
         try {
             result = db.executeUpdate(sqlpart, auxhash);
@@ -228,7 +228,7 @@ public class EventCoreUpdate {
         String subprefix = StringA.changeChars(prefix, "[]", "");
         auxhash.put(subprefix + "[" + i + "].index()", i);
         String sqlpart2 = changePrefix(sqlpart, prefix, i);
-        db.setCharFilter(EngFunction.cleanSpace(update.getSqlFilter()), "");
+        db.setCharFilter(RtmFunction.cleanSpace(update.getSqlFilter()), "");
         int result = -1;
         try {
             result = db.executeUpdate(sqlpart2, auxhash);

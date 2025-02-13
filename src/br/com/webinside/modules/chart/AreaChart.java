@@ -30,7 +30,7 @@ public class AreaChart extends WICategoryChart {
      */
     public void createChart() {
         chart = ChartFactory.createAreaChart(title, xLabel, yLabel,
-                getCategoryDataset(), getPlotOrientation(), true, true,
+                getCategoryDataset(), getPlotOrientation(), hasLegend(), true,
                 false);
         defineCategoryFont(chart);
     }

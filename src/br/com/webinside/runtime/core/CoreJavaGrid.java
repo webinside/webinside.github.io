@@ -30,7 +30,7 @@ import br.com.webinside.runtime.integration.ProducerParam;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CoreJavaGrid extends CoreCommon {
     private JavaGrid javagrid;
@@ -90,9 +90,9 @@ public class CoreJavaGrid extends CoreCommon {
             if (cl != null) {
                 wiMap.put("grid.limit", limit + "");
                 wiMap.put("grid.id", grid.getId().trim());
-                InterfaceGrid interf = (InterfaceGrid) cl.newInstance();
+                InterfaceGrid interf = (InterfaceGrid) cl.getConstructor().newInstance();
                 JavaParameter[] params = javagrid.getInputParameters();
-                EngFunction.putJavaParameters(wiMap, params);
+                RtmFunction.putJavaParameters(wiMap, params);
                 array = interf.execute(wiMap, wiParams.getDatabaseAliases());
                 type = interf.returnType();
                 if ((type != 1) && (type != 0) && (type != -1)) {
@@ -107,7 +107,7 @@ public class CoreJavaGrid extends CoreCommon {
 			if (!wiParams.getPage().getErrorPageName().equals("")) {
 				wiParams.setRequestAttribute("wiException", err);
 			}
-        } catch (Error err) {
+        } catch (Throwable err) {
             wiParams.getErrorLog().write(name, "JAVAGRID", err);
         }
         if (array != null) {

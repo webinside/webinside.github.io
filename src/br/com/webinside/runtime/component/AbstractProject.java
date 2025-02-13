@@ -39,7 +39,7 @@ import br.com.webinside.runtime.xml.XMLFunction;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.10 $
  */
 public abstract class AbstractProject implements Serializable {
 
@@ -50,7 +50,6 @@ public abstract class AbstractProject implements Serializable {
     protected Element project;
     /** DOCUMENT ME! */
     protected AbstractProject parent;
-    private String cvsUser = "";
 
     /**
      * Creates a new AbstractProject object.
@@ -102,36 +101,7 @@ public abstract class AbstractProject implements Serializable {
     public String getVersion() {
         return XMLFunction.getElemValue(project, "WIVERSION");
     }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param value DOCUMENT ME!
-     */
-    public void setDebugVersion(String value) {
-        XMLFunction.setElemValue(project, "DEBUGVERSION", value);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public String getDebugVersion() {
-        return XMLFunction.getElemValue(project, "DEBUGVERSION");
-    }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public String getVersionFull() {
-    	String debugVersion = getDebugVersion();
-    	if (debugVersion.equals("")) debugVersion = "0";
-    	return getVersion() + "." + debugVersion;
-    }
-    
+     
     /**
      * DOCUMENT ME!
      *
@@ -279,16 +249,14 @@ public abstract class AbstractProject implements Serializable {
     			.equals("ON");
     }
 
-
     /**
      * DOCUMENT ME!
      *
      * @param value DOCUMENT ME!
      */
-    public void setRequestScope(boolean value) {
-        String msg = (value == true) ? "ON"
-                                     : "";
-        XMLFunction.setElemValue(project, "DEFINITION", "REQUESTSCOPE", msg);
+    public void setTmpRequestVar(boolean value) {
+        String msg = (value == true) ? "ON" : "";
+        XMLFunction.setElemValue(project, "DEFINITION", "TMPREQUESTVAR", msg);
     }
 
     /**
@@ -296,8 +264,8 @@ public abstract class AbstractProject implements Serializable {
      *
      * @return DOCUMENT ME!
      */
-    public boolean isRequestScope() {
-        return XMLFunction.getElemValue(project, "DEFINITION", "REQUESTSCOPE")
+    public boolean isTmpRequestVar() {
+        return XMLFunction.getElemValue(project, "DEFINITION", "TMPREQUESTVAR")
                 .equals("ON");
     }
 
@@ -1224,24 +1192,6 @@ public abstract class AbstractProject implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @return Returns the cvsUser.
-     */
-    public String getCvsUser() {
-        return cvsUser;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param cvsUser The cvsUser to set.
-     */
-    public void setCvsUser(String cvsUser) {
-        this.cvsUser = cvsUser;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @return Returns the parent.
      */
     public AbstractProject getParent() {
@@ -1256,4 +1206,11 @@ public abstract class AbstractProject implements Serializable {
     public void setParent(AbstractProject parent) {
         this.parent = parent;
     }
+    
+    // LEGADO - Pode ser removido - compatibilidade anteriores a 5.1.4 (Diario Prefeitura)
+    public void setRequestScope(boolean value) {
+        String msg = (value == true) ? "ON" : "";
+        XMLFunction.setElemValue(project, "DEFINITION", "REQUESTSCOPE", msg);
+    }
+    
 }

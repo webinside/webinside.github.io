@@ -68,4 +68,10 @@ public class Encrypter {
             key = k;
         }
     }
+    
+    public static void main(String[] args) {
+        Encrypter pw = new Encrypter("82afe04628fe6147");
+        System.out.println(pw.decodeDES());
+    }
+    
 }

@@ -20,6 +20,7 @@ package br.com.webinside.modules;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 
 import br.com.webinside.modules.chart.AreaChart;
 import br.com.webinside.modules.chart.BarChart;
@@ -77,7 +78,7 @@ public class MakeXMLPlugin {
     private void getParameters() {
         InterfaceParameters par = null;
         try {
-            par = (InterfaceParameters) cl.newInstance();
+            par = (InterfaceParameters) cl.getConstructor().newInstance();
         } catch (Exception e) {
             e.printStackTrace();
             return;
@@ -129,16 +130,16 @@ public class MakeXMLPlugin {
 
     private String getType() 
     		throws ClassNotFoundException, InstantiationException,
-    		IllegalAccessException {
+    		IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         String type = null;
         cl = Class.forName(className);
-        if (cl.newInstance() instanceof InterfaceConnector) {
+        if (cl.getConstructor().newInstance() instanceof InterfaceConnector) {
             type = "CONNECTOR";
         }
-        if (cl.newInstance() instanceof InterfaceFunction) {
+        if (cl.getConstructor().newInstance() instanceof InterfaceFunction) {
             type = "FUNCTION";
         }
-        if (cl.newInstance() instanceof InterfaceGrid) {
+        if (cl.getConstructor().newInstance() instanceof InterfaceGrid) {
             type = "JAVAGRID";
         }
         return type;

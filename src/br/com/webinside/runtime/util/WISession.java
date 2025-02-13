@@ -24,13 +24,14 @@ import javax.servlet.http.*;
  * Classe utilizando HttpSession para uso do WI.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.4 $
  *
  * @since 3.0
  */
 public class WISession {
 
 	public static final String SESSION_KEY = "webinside";
+	public static final String SESSION_KEY_OLD = "webintegrator";
 	
 	private HttpServletRequest request;
     private HttpSession session;
@@ -86,15 +87,17 @@ public class WISession {
     public void setAttribute(String key, Object obj) {
         if ((session != null) && (key != null) && (obj != null)
                     && !key.equals("")) {
-            Map wiSession = null;
+            Map sessionMap = null;
             Object wiObjSession = session.getAttribute(SESSION_KEY);
             if (wiObjSession == null) {
-                wiSession = Collections.synchronizedMap(new HashMap());
+            	sessionMap = Collections.synchronizedMap(new HashMap());
             } else {
-                wiSession = (Map) wiObjSession;
+            	sessionMap = (Map) wiObjSession;
             }
-            wiSession.put(key, obj);
-            session.setAttribute(SESSION_KEY, wiSession);
+            sessionMap.put(key, obj);
+            session.setAttribute(SESSION_KEY, sessionMap);
+            // adicionado para compatibilidade com legado webintegrator
+            session.setAttribute(SESSION_KEY_OLD, sessionMap);
         }
     }
 
@@ -110,10 +113,11 @@ public class WISession {
         if ((session == null) || (key == null) || key.equals("")) {
             return null;
         }
-        Object wiObjSession = session.getAttribute(SESSION_KEY);
-        if (wiObjSession == null) {
-            return null;
-        }
+        Object wiObjSession = null;
+        try {
+        	wiObjSession = session.getAttribute(SESSION_KEY);
+        } catch (IllegalStateException isex) { }
+        if (wiObjSession == null) return null;
         Map wiSession = (Map) wiObjSession;
         return wiSession.get(key);
     }
@@ -126,15 +130,17 @@ public class WISession {
      */
     public void removeAttribute(String key) {
         if ((session != null) && (key != null) && !key.equals("")) {
-            Map wiSession = null;
+            Map sessionMap = null;
             Object wiObjSession = session.getAttribute(SESSION_KEY);
             if (wiObjSession == null) {
-                wiSession = Collections.synchronizedMap(new HashMap());
+            	sessionMap = Collections.synchronizedMap(new HashMap());
             } else {
-                wiSession = (Map) wiObjSession;
+            	sessionMap = (Map) wiObjSession;
             }
-            wiSession.remove(key);
-            session.setAttribute(SESSION_KEY, wiSession);
+            sessionMap.remove(key);
+            session.setAttribute(SESSION_KEY, sessionMap);
+            // adicionado para compatibilidade com legado webintegrator
+            session.setAttribute(SESSION_KEY_OLD, sessionMap);
         }
     }
 
@@ -229,4 +235,5 @@ public class WISession {
             session.setMaxInactiveInterval(seconds);
         }
     }
+        
 }

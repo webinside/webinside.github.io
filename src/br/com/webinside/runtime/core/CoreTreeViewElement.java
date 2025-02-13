@@ -33,7 +33,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CoreTreeViewElement extends CoreCommon {
     private TreeViewElement tree;
@@ -99,7 +99,7 @@ public class CoreTreeViewElement extends CoreCommon {
             String dbalias = tree.getDatabase();
             DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
             if ((db == null) || (!db.isConnected())) {
-                EngFunction.databaseError(wiParams, dbalias);
+                RtmFunction.databaseError(wiParams, dbalias);
                 return;
             }
             long ini = new Date().getTime();

@@ -17,8 +17,10 @@
 
 package br.com.webinside.runtime.core;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+
 import br.com.webinside.runtime.component.KillElement;
 import br.com.webinside.runtime.integration.IntFunction;
 import br.com.webinside.runtime.integration.Producer;
@@ -28,7 +30,7 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.3 $
  */
 public class CoreKillElement extends CoreCommon {
     private KillElement kill;
@@ -58,10 +60,9 @@ public class CoreKillElement extends CoreCommon {
         while (tks.hasMoreTokens()) {
             String wiobj = tks.nextToken().trim();
             if (wiobj.toLowerCase().startsWith("wi.")) {
-                if (wiobj.equalsIgnoreCase("wi.session.id")
-                            && (wiParams.getWISession() != null)) {
+                if (wiobj.equalsIgnoreCase("wi.session.id")) {
                     if (!wiParams.getWISession().hasAttributeWithPrefix("bld-")) {
-                        wiParams.getWISession().invalidate();
+                    	wiParams.getWIMap().put("wi.session.id", "invalidate");
                     }
                 }
                 continue;
@@ -91,7 +92,7 @@ public class CoreKillElement extends CoreCommon {
     // 1 = Remove *.*
     // 2 = Remove * (*pes representa o mesmo que *)
     private void remove(int type) {
-        Iterator it = wiMap.getInternalMap().keySet().iterator();
+        Iterator it = new HashSet(wiMap.getInternalMap().keySet()).iterator();
         while (it.hasNext()) {
             String key = (String) it.next();
             if (!key.startsWith("wi.")) {

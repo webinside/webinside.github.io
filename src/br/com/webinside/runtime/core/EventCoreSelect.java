@@ -31,7 +31,7 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class EventCoreSelect {
     private ExecuteParams wiParams;
@@ -73,7 +73,7 @@ public class EventCoreSelect {
         }
         ProducerParam prod = new ProducerParam();
         prod.setWIMap(wiParams.getWIMap());
-        db.setCharFilter(EngFunction.cleanSpace(select.getSqlFilter()), "");
+        db.setCharFilter(RtmFunction.cleanSpace(select.getSqlFilter()), "");
         ResultSet rs = null;
         try {
             rs = db.execute(select.getSql(), wiParams.getWIMap());

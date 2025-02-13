@@ -45,7 +45,7 @@ import br.com.webinside.runtime.util.StringComparator;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.4 $
  */
 public class CoreFileList extends CoreCommon {
     private AbstractFileList fileList;
@@ -160,7 +160,7 @@ public class CoreFileList extends CoreCommon {
                     ftp = null;
                 }
             } else {
-                EngFunction.hostError(wiParams, lstftp.getHostId());
+                RtmFunction.hostError(wiParams, lstftp.getHostId());
                 return;
             }
         }

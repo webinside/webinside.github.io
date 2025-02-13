@@ -17,7 +17,6 @@
 
 package br.com.webinside.runtime.core;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -51,7 +50,7 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  * 
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.5 $
  */
 public class CoreMailGet extends CoreCommon {
 
@@ -77,22 +76,16 @@ public class CoreMailGet extends CoreCommon {
 	 * DOCUMENT ME!
 	 */
 	public void execute() {
-		if (!isValidCondition()) {
-			return;
-		}
+		if (!isValidCondition()) return;
 		try {
 			store = null;
 			mailGet();
+        	if (store != null) {
+        		store.close();
+        	}
 		} catch (Exception err) {
 			wiParams.getErrorLog().write(getClass().getName(), "execute", err);
-		} finally {
-			if (store != null) {
-				try {
-					store.close();
-				} catch (MessagingException e) {
-				}
-			}
-		}
+		}	
 	}
 
 	private void mailGet() throws MessagingException, IOException {
@@ -104,7 +97,7 @@ public class CoreMailGet extends CoreCommon {
 						host.getProtocol().startsWith("IMAP"))) {
 			store = IntFunction.getStoreConnection(wiMap, host);
 			if (store == null) {
-				EngFunction.hostError(wiParams, get.getHostId());
+				RtmFunction.hostError(wiParams, get.getHostId());
 				return;
 			}
 		}
@@ -263,18 +256,7 @@ public class CoreMailGet extends CoreCommon {
 		wiParams.getHttpResponse().setHeader("Content-disposition", dispname);
 		String mime = StringA.piece(bp.getContentType(), ";", 1);
 		wiParams.setContentType(mime);
-		try {
-			byte[] trecho = new byte[10240];
-			int quant = 0;
-			BufferedInputStream in = new BufferedInputStream(bp
-					.getInputStream());
-			while ((quant = in.read(trecho)) > -1) {
-				wiParams.getOutputStream().write(trecho, 0, quant);
-				wiParams.getOutputStream().flush();
-			}
-			in.close();
-		} catch (IOException err) {
-		}
+		Function.copyStream(bp.getInputStream(), wiParams.getOutputStream());
 		folder.close(false);
 	}
 

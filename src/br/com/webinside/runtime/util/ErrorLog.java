@@ -86,7 +86,7 @@ public class ErrorLog extends AbstractLog {
      * @param id um identificador para facilitar a localização.
      * @param err o erro gerado.
      */
-    public void write(String className, String id, Exception err) {
+    public void write(String className, String id, Throwable err) {
         StringWriter str = new StringWriter();
         if (err.getCause() != null) {
             String msg = err.getMessage();

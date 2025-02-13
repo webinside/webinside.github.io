@@ -18,8 +18,13 @@
 package br.com.webinside.runtime.core;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.ServletContext;
 
@@ -31,56 +36,96 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Constants {
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param sContext DOCUMENT ME!
-     * @param wiMap DOCUMENT ME!
-     *
-     */
     public static void populate(ServletContext sContext, WIMap wiMap) {
     	if (sContext == null) return;
-    	Map constants = (Map) sContext.getAttribute("wi.constants");
-    	if (constants == null) {
-    		constants = new HashMap();
-    		sContext.setAttribute("wi.constants", constants);
-    		sContext.setAttribute("wi.constants.time", new Long(0));
+    	ConstantsNode node = (ConstantsNode) sContext.getAttribute("wi.constants");
+    	if (node == null) {
+    		node = (new Constants()).new ConstantsNode();
+    		sContext.setAttribute("wi.constants", node);
     	}
-    	Long time = (Long) sContext.getAttribute("wi.constants.time");
-    	File file = new File(sContext.getRealPath("/WEB-INF/constants.xml"));    	
-    	if (file.isFile() && file.lastModified() != time.longValue()) {
-        	time = new Long(file.lastModified());
-    		WIMap aux = new WIMap();
-        	populate(file, aux);
-        	constants = aux.getAsMap();
-    		sContext.setAttribute("wi.constants", constants);
-    		sContext.setAttribute("wi.constants.time", time);
+    	String dir = sContext.getRealPath("/WEB-INF");
+    	File xml = new File(dir, "constants.xml");    	
+    	if (xml.lastModified() > node.timeXml) {
+    		node.timeXml = xml.lastModified();
+    		node.constantsXml = populateFromXml(xml);
     	}
-       	wiMap.putAll(constants);
+    	File props = new File(dir, "constants.props");    	
+    	if (props.lastModified() > node.timeProps) {
+    		node.timeProps = props.lastModified();
+    		node.constantsProps = populateFromProps(props);
+    	}
+       	wiMap.putAll(node.constantsXml);
+       	wiMap.putAll(node.constantsProps);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param file DOCUMENT ME!
-     * @param wiMap DOCUMENT ME!
-     *
-     */
-    public static void populate(File file, WIMap wiMap) {
-    	if (file.isFile()) {
-        	FileIO fio = new FileIO(file.getAbsolutePath(), FileIO.READ);
-        	String content = fio.readText();
-        	content = StringA.change(content, "wi.", "tmp.wi_");
-        	content = StringA.change(content, "wi_", "tmp.wi_");
-        	content = StringA.change(content, "grid_", "grid.");
-        	content = StringA.change(content, "tmp_", "tmp.");
-        	content = StringA.change(content, "pvt_", "pvt.");
-        	content = StringA.change(content, "app_", "app.");
-        	new CoreXmlImport(wiMap, "").execute(content);
-    	}
+    public static void populate(String dir, WIMap wiMap) {
+    	File xml = new File(dir, "constants.xml");
+   		Map<String, String> mapXml = populateFromXml(xml);
+   		wiMap.putAll(mapXml);
+    	File props = new File(dir, "constants.props");
+   		Map<String, String> mapProps = populateFromProps(props);
+   		wiMap.putAll(mapProps);
     }
+    
+    private static Map<String, String> populateFromXml(File xmlFile) {
+    	Map<String, String> map = new HashMap<String, String>();
+    	if (xmlFile.isFile()) {
+    		WIMap wiMap = new WIMap();
+        	FileIO fio = new FileIO(xmlFile.getAbsolutePath(), FileIO.READ);
+        	new CoreXmlImport(wiMap, "").execute(fio.readText());
+        	map = wiMap.getAsMap();
+        	filterMap(map);
+    	}
+    	return map;
+    }
+    
+    private static Map<String, String> populateFromProps(File propsFile) {
+    	Map<String, String> map = new HashMap<String, String>();
+    	if (propsFile.isFile()) {
+    		Properties props = new Properties();
+        	try {
+        		InputStream in = new FileInputStream(propsFile);
+        		props.load(in);
+        	} catch (IOException e) {
+        		// ignorado
+        	}
+        	for (String key : props.stringPropertyNames()) {
+        		map.put(key, props.getProperty(key).trim());
+        	}
+        	filterMap(map);
+    	}
+    	return map;
+    }
+    
+    private static void filterMap(Map<String,String> map) {
+    	for (String key : new HashSet<String>(map.keySet())) {
+    		key = key.toLowerCase().trim();
+    		String newKey = "";
+			if (key.startsWith("wi.")) newKey = StringA.change(key, "wi.", "tmp.wi_");
+			if (key.startsWith("wi_")) newKey = StringA.change(key, "wi_", "tmp.wi_");
+			if (key.startsWith("grid_")) newKey = StringA.change(key, "grid_", "grid.");
+			if (key.startsWith("combo_")) newKey = StringA.change(key, "combo_", "combo.");
+			if (key.startsWith("tmp_")) newKey = StringA.change(key, "tmp_", "tmp.");
+			if (key.startsWith("stmp_")) newKey = StringA.change(key, "stmp_", "stmp.");
+			if (key.startsWith("pvt_")) newKey = StringA.change(key, "pvt_", "pvt.");
+			if (key.startsWith("app_")) newKey = StringA.change(key, "app_", "app.");
+			if (!newKey.equals("")) {
+				map.put(newKey, map.remove(key));
+			}
+		}
+    }
+    
+    private class ConstantsNode {
+    	
+    	private Map<String, String> constantsXml = new HashMap<String, String>();
+    	private Map<String, String> constantsProps = new HashMap<String, String>();
+    	private long timeXml = 0;
+    	private long timeProps = 0;
+    	
+    }
+    
 }

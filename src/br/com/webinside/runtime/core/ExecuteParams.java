@@ -31,6 +31,7 @@ import java.util.Map;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -54,161 +55,47 @@ import br.com.webinside.runtime.xml.XMLFunction;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.7 $
  */
 public class ExecuteParams {
 	
-    /** DOCUMENT ME! */
-    public final static int HTTP_REQUEST = 1;
-    /** DOCUMENT ME! */
-    public final static int HTTP_RESPONSE = 2;
-    /** DOCUMENT ME! */
-    public final static int SERVLET_CONTEXT = 3;
-    /** DOCUMENT ME! */
-    public final static int CLASSLOADER = 4;
-    /** DOCUMENT ME! */
-    public final static int OUT_STREAM = 5;
-    /** DOCUMENT ME! */
-    public final static int OUT_WRITER = 6;
-    /** DOCUMENT ME! */
-    public final static int WI_SESSION = 7;
-    /** DOCUMENT ME! */
-    public final static int DATABASE_ALIASES = 8;
-    /** DOCUMENT ME! */
-    public final static int FILE_UPLOAD = 9;
-    /** DOCUMENT ME! */
-    public final static int PROJECT = 10;
-    /** DOCUMENT ME! */
-    public final static int PAGE = 11;
-    /** DOCUMENT ME! */
-    public final static int PRODUCER = 12;
-    /** DOCUMENT ME! */
-    public final static int ERROR_LOG = 13;
-    /** DOCUMENT ME! */
-    public final static int WI_MAP = 14;
-    /** DOCUMENT ME! */
-    public final static int WI_CVS = 15;
-
     // parametros da Thread
     private static ThreadLocal thisParam = new ThreadLocal();
-	private static ThreadLocal classLoader = new ThreadLocal();
 	
 	// parametros do ExecuteParams
-    private Map parameters = new HashMap();
+    private Map<ExecuteParamsEnum, Object> parameters = new HashMap();
 
     // parametros de compatibilidade com o request antigo do WI
-    private Map httpParameters;
+    private Map httpParameters = new LinkedHashMap();;
 
-    /**
-     * Creates a new ExecuteParams object.
-     */
     public ExecuteParams() {
-        setParameter(PRODUCER, new Producer());
-        setParameter(DATABASE_ALIASES, new DatabaseAliases());
+        setParameter(ExecuteParamsEnum.CLASSLOADER, getClass().getClassLoader());
+        setParameter(ExecuteParamsEnum.PRODUCER, new Producer());
+        setParameter(ExecuteParamsEnum.DATABASE_ALIASES, new DatabaseAliases());
         getDatabaseAliases().setWIParams(this);
-        setParameter(CLASSLOADER, getClass().getClassLoader());
-        // compatibilidade
-        httpParameters = new LinkedHashMap();
+        set(this);
     }
 
-    /**
-     * Creates a new ExecuteParams object.
-     *
-     * @param request DOCUMENT ME!
-     * @param response DOCUMENT ME!
-     * @param application DOCUMENT ME!
-     */
-    public ExecuteParams(HttpServletRequest request,
-        HttpServletResponse response, ServletContext application) {
-        setParameter(PRODUCER, new Producer());
-        setParameter(DATABASE_ALIASES, new DatabaseAliases());
-        getDatabaseAliases().setWIParams(this);
-        setParameter(HTTP_REQUEST, request);
-        setParameter(HTTP_RESPONSE, response);
-        setParameter(SERVLET_CONTEXT, application);
-        setParameter(WI_SESSION, new WISession(request.getSession()));
-        set(this);
-        // compatibilidade
-        httpParameters = new LinkedHashMap();
+    public ExecuteParams(HttpServletRequest request, HttpServletResponse response, 
+    		ServletContext application) {
+    	this();
+        setParameter(ExecuteParamsEnum.HTTP_REQUEST, request);
+        setParameter(ExecuteParamsEnum.HTTP_RESPONSE, response);
+        setParameter(ExecuteParamsEnum.SERVLET_CONTEXT, application);
+        setParameter(ExecuteParamsEnum.WI_SESSION, new WISession(request.getSession()));
         setHttpParameters();
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param type DOCUMENT ME!
-     * @param obj DOCUMENT ME!
-     */
-    public void setParameter(int type, Object obj) {
-        if (obj == null) {
-            parameters.remove(type + "");
-            return;
-        }
-        if (type == HTTP_REQUEST) {
-            if (obj instanceof HttpServletRequest) {
-                parameters.put(HTTP_REQUEST + "", obj);
-                if (!parameters.containsKey(WI_CVS + "")) {
-                    String cvs = getHttpRequest().getRequestURI();
-                    if ((cvs != null) && (cvs.indexOf("WI-CVS") > -1)) {
-                        cvs = StringA.piece(cvs.trim(), "/", 3, 4);
-                        parameters.put(WI_CVS + "", "/" + cvs);
-                    }
-                }
-            }
-        } else if (type == HTTP_RESPONSE) {
-            if (obj instanceof HttpServletResponse) {
-                parameters.put(HTTP_RESPONSE + "", obj);
-            }
-        } else if (type == SERVLET_CONTEXT) {
-            if (obj instanceof ServletContext) {
-                parameters.put(SERVLET_CONTEXT + "", obj);
-            }
-        } else if (type == CLASSLOADER) {
-            if (obj instanceof ClassLoader) {
-                parameters.put(CLASSLOADER + "", obj);
-                classLoader.set(obj);
-            }
-        } else if (type == OUT_STREAM) {
-            if (obj instanceof OutputStream) {
-                parameters.put(OUT_STREAM + "", obj);
-            }
-        } else if (type == OUT_WRITER) {
-            if (obj instanceof Writer) {
-                parameters.put(OUT_WRITER + "", obj);
-            }
-        } else if (type == WI_SESSION) {
-            if (obj instanceof WISession) {
-                parameters.put(WI_SESSION + "", obj);
-            }
-        } else if (type == DATABASE_ALIASES) {
-            if (obj instanceof DatabaseAliases) {
-                parameters.put(DATABASE_ALIASES + "", obj);
-            }
-        } else if (type == FILE_UPLOAD) {
-            if (obj instanceof FileUpload) {
-                parameters.put(FILE_UPLOAD + "", obj);
-            }
-        } else if (type == PROJECT) {
+    public void setParameter(ExecuteParamsEnum type, Object obj) {
+//        if (obj == null) {
+//            parameters.remove(type + "");
+//            return;
+//        }
+    	parameters.put(type, obj);    	
+        if (type == ExecuteParamsEnum.PROJECT) {
             if (obj instanceof AbstractProject) {
                 AbstractProject prj = (AbstractProject) obj;
-                parameters.put(PROJECT + "", prj);
                 getDatabaseAliases().setLog(prj.getSqlLog());
-            }
-        } else if (type == PAGE) {
-            if (obj instanceof Page) {
-                parameters.put(PAGE + "", obj);
-            }
-        } else if (type == PRODUCER) {
-            if (obj instanceof Producer) {
-                parameters.put(PRODUCER + "", obj);
-            }
-        } else if (type == ERROR_LOG) {
-            if (obj instanceof ErrorLog) {
-                parameters.put(ERROR_LOG + "", obj);
-            }
-        } else if (type == WI_MAP) {
-            if (obj instanceof WIMap) {
-                parameters.put(WI_MAP + "", obj);
             }
         }
     }
@@ -235,7 +122,7 @@ public class ExecuteParams {
     		}
     		if (!logsDir.equals("")) {
 	    		ErrorLog errorLog = ErrorLog.getInstance(logsDir);
-	            setParameter(ERROR_LOG, errorLog);
+	            setParameter(ExecuteParamsEnum.ERROR_LOG, errorLog);
 	            return;
     		}    
     	} 
@@ -257,7 +144,7 @@ public class ExecuteParams {
         	}
     		if (!logsDir.equals("")) {
 	            ErrorLog errorLog = ErrorLog.getInstance(logsDir);
-	            setParameter(ERROR_LOG, errorLog);
+	            setParameter(ExecuteParamsEnum.ERROR_LOG, errorLog);
     		}    
         }
     }	
@@ -333,7 +220,8 @@ public class ExecuteParams {
             return;
         }
         url = StringA.change(url, '\\', '/');
-        if (!url.trim().toLowerCase().startsWith("http://")) {
+        if (!url.trim().toLowerCase().startsWith("http://") &&
+        		!url.trim().toLowerCase().startsWith("https://")) {
             AbstractProject proj = getProject();
             if (proj != null) {
             	String auxUrl = StringA.piece(url, "?", 1);
@@ -370,7 +258,7 @@ public class ExecuteParams {
 
     // Gets dos Parametros
     public HttpServletRequest getHttpRequest() {
-        return (HttpServletRequest) parameters.get(HTTP_REQUEST + "");
+        return (HttpServletRequest) parameters.get(ExecuteParamsEnum.HTTP_REQUEST);
     }
 
     /**
@@ -379,7 +267,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public HttpServletResponse getHttpResponse() {
-        return (HttpServletResponse) parameters.get(HTTP_RESPONSE + "");
+        return (HttpServletResponse) parameters.get(ExecuteParamsEnum.HTTP_RESPONSE);
     }
 
     /**
@@ -388,7 +276,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public ServletContext getServletContext() {
-        return (ServletContext) parameters.get(SERVLET_CONTEXT + "");
+        return (ServletContext) parameters.get(ExecuteParamsEnum.SERVLET_CONTEXT);
     }
 
     /**
@@ -397,16 +285,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public ClassLoader getClassLoader() {
-        return (ClassLoader) parameters.get(CLASSLOADER + "");
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public static ClassLoader getThreadClassLoader() {
-        return (ClassLoader) classLoader.get();
+        return (ClassLoader) parameters.get(ExecuteParamsEnum.CLASSLOADER);
     }
 
     /**
@@ -426,7 +305,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public PrintStream getOutputStream(boolean tryOpen) {
-        OutputStream s = (OutputStream) parameters.get(OUT_STREAM + "");
+        OutputStream s = (OutputStream) parameters.get(ExecuteParamsEnum.OUT_STREAM);
         if (tryOpen) {
             if (s == null) {
                 if (getHttpResponse() != null) {
@@ -436,7 +315,7 @@ public class ExecuteParams {
                     	System.err.println(getClass().getName() + ": " + err);
                     }
                     if (s != null) {
-                        parameters.put(OUT_STREAM + "", s);
+                        parameters.put(ExecuteParamsEnum.OUT_STREAM, s);
                     }
                 }
             }
@@ -464,7 +343,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public PrintWriter getWriter(boolean tryOpen) {
-        Writer w = (Writer) parameters.get(OUT_WRITER + "");
+        Writer w = (Writer) parameters.get(ExecuteParamsEnum.OUT_WRITER);
         if (tryOpen) {
             if (w == null) {
                 if (getHttpResponse() == null) {
@@ -476,7 +355,7 @@ public class ExecuteParams {
                 	// ignorado.
                 }
                 if (w != null) {
-                    parameters.put(OUT_WRITER + "", w);
+                    parameters.put(ExecuteParamsEnum.OUT_WRITER, w);
                 }
             }
         }
@@ -495,7 +374,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public WISession getWISession() {
-        return (WISession) parameters.get(WI_SESSION + "");
+        return (WISession) parameters.get(ExecuteParamsEnum.WI_SESSION);
     }
 
     /**
@@ -504,7 +383,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public DatabaseAliases getDatabaseAliases() {
-        return (DatabaseAliases) parameters.get(DATABASE_ALIASES + "");
+        return (DatabaseAliases) parameters.get(ExecuteParamsEnum.DATABASE_ALIASES);
     }
 
     /**
@@ -513,7 +392,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public FileUpload getFileUpload() {
-        return (FileUpload) parameters.get(FILE_UPLOAD + "");
+        return (FileUpload) parameters.get(ExecuteParamsEnum.FILE_UPLOAD);
     }
 
     /**
@@ -522,7 +401,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public AbstractProject getProject() {
-        return (AbstractProject) parameters.get(PROJECT + "");
+        return (AbstractProject) parameters.get(ExecuteParamsEnum.PROJECT);
     }
 
     /**
@@ -531,7 +410,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public Page getPage() {
-        return (Page) parameters.get(PAGE + "");
+        return (Page) parameters.get(ExecuteParamsEnum.PAGE);
     }
 
     /**
@@ -540,7 +419,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public Producer getProducer() {
-        return (Producer) parameters.get(PRODUCER + "");
+        return (Producer) parameters.get(ExecuteParamsEnum.PRODUCER);
     }
 
     /**
@@ -549,7 +428,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public ErrorLog getErrorLog() {
-    	return (ErrorLog) parameters.get(ERROR_LOG + "");
+    	return (ErrorLog) parameters.get(ExecuteParamsEnum.ERROR_LOG);
     }
 
     /**
@@ -558,7 +437,7 @@ public class ExecuteParams {
      * @return DOCUMENT ME!
      */
     public WIMap getWIMap() {
-        return (WIMap) parameters.get(WI_MAP + "");
+        return (WIMap) parameters.get(ExecuteParamsEnum.WI_MAP);
     }
 
     /**
@@ -624,19 +503,18 @@ public class ExecuteParams {
         }
         Page origpage = getPage();
         Producer producer = getProducer();
-        setParameter(ExecuteParams.PAGE, page);
-        setParameter(ExecuteParams.PRODUCER, new Producer());
+        setParameter(ExecuteParamsEnum.PAGE, page);
+        setParameter(ExecuteParamsEnum.PRODUCER, new Producer());
         String preJSP = page.getId() + "_pre.jsp";
         if (!preJSP.startsWith("/")) {
             preJSP = "/" + preJSP;
         }
         getHttpRequest().setAttribute("wiParams", this);
         try {
-        	String resource = getWICVS() + preJSP;
-        	File f = new File(getServletContext().getRealPath(resource));
-        	if (f.exists() || Execute.jspList.contains(resource)) { 
+        	File f = new File(getServletContext().getRealPath(preJSP));
+        	if (f.exists() || ExecuteServlet.jspList.contains(preJSP)) { 
         		RequestDispatcher rd = 
-        			getServletContext().getRequestDispatcher(resource);
+        			getServletContext().getRequestDispatcher(preJSP);
         		rd.include(getHttpRequest(), getHttpResponse());
         	}	
         } catch (Exception err) {
@@ -650,8 +528,8 @@ public class ExecuteParams {
                     ex);
             }
         }
-        setParameter(ExecuteParams.PAGE, origpage);
-        setParameter(ExecuteParams.PRODUCER, producer);
+        setParameter(ExecuteParamsEnum.PAGE, origpage);
+        setParameter(ExecuteParamsEnum.PRODUCER, producer);
     }
 
     /**
@@ -670,11 +548,9 @@ public class ExecuteParams {
             jspPage = "/" + jspPage;
         }
         try {
-        	String resource = getWICVS() + jspPage;
-        	File f = new File(getServletContext().getRealPath(resource));
-        	if (f.exists() || Execute.jspList.contains(resource)) { 
-        		RequestDispatcher rd = 
-        			getServletContext().getRequestDispatcher(resource);
+        	File f = new File(getServletContext().getRealPath(jspPage));
+        	if (f.exists() || ExecuteServlet.jspList.contains(jspPage)) { 
+        		RequestDispatcher rd = getServletContext().getRequestDispatcher(jspPage);
         		rd.include(getHttpRequest(), getHttpResponse());
         	}	
         } catch (Exception err) {
@@ -695,19 +571,6 @@ public class ExecuteParams {
 		httpParameters.clear();
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public String getWICVS() {
-        String cvs = (String) parameters.get(WI_CVS + "");
-        if (cvs == null) {
-            cvs = "";
-        }
-        return cvs;
-    }
-
     protected boolean mustExit() {
     	boolean exit = false;
     	if (getRequestAttribute("wiExit") != null) {
@@ -782,13 +645,7 @@ public class ExecuteParams {
      * Define o ExecuteParams da Thread
      */
     public static void set(ExecuteParams executeParams) {
-    	if (executeParams == null) {
-            thisParam.set(null);
-    		classLoader.set(null);
-    	} else {
-            thisParam.set(executeParams);
-        	classLoader.set(executeParams.getClassLoader());
-    	}
+    	thisParam.set(executeParams);
     }
 
     /**
@@ -798,6 +655,29 @@ public class ExecuteParams {
      */
     public static ExecuteParams get() {
         return (ExecuteParams) thisParam.get();
+    }
+    
+    public static ExecuteParams initInstance(HttpServletRequest request, 
+    		HttpServletResponse response, ServletContext context) 
+    		throws ServletException, IOException {
+    	MimeType.readFile(new MimeType().getClass().getClassLoader());    	
+        String projId = StringA.piece(request.getRequestURI(), "/", 2);
+        request.setAttribute("wiProject", projId);
+        ExecuteParams wiParams = new ExecuteParams(request, response, context);
+        request.setAttribute("wiParams", wiParams);
+        context.getRequestDispatcher("/project.jsp").include(request, response);
+		WIMap wiMap = new WIMap();
+        try {
+            wiMap = new Context(wiParams).getWIMap(true);
+        } catch (Exception err) { 
+        	err.printStackTrace();
+        }
+        wiParams.setParameter(ExecuteParamsEnum.WI_MAP, wiMap);
+        wiParams.setErrorLog(null);
+        DatabaseAliases databases = wiParams.getDatabaseAliases();
+        databases.setLog(wiParams.getProject().getSqlLog());
+        databases.loadDatabases(wiParams.getProject());
+        return wiParams;
     }
     
 }

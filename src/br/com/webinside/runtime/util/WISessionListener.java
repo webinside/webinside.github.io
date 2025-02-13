@@ -20,11 +20,13 @@ package br.com.webinside.runtime.util;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
+import br.com.webinside.runtime.function.SecureLinkManager;
+
 /**
  * Classe utilizada como Listener da sessão no WI.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  *
  * @since 3.0
  */
@@ -46,5 +48,7 @@ public class WISessionListener implements HttpSessionListener {
         // remove os arquivos temporários da sessão
     	String id = event.getSession().getId();
         Function.removeDir(Function.tmpDir() + ".wi/" + id, true);
+        // remove a sessão do securelink
+        SecureLinkManager.removeSession(id);
     }
 }

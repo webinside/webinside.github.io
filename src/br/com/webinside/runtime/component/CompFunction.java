@@ -33,7 +33,7 @@ import br.com.webinside.runtime.xml.Inputter;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.7 $
  */
 public class CompFunction {
     
@@ -87,6 +87,7 @@ public class CompFunction {
         StringBuffer resp = new StringBuffer();
         for (int i = 0; i < txt.length(); i++) {
             char let = txt.charAt(i);
+            char let2 = (i+1 < txt.length() ? txt.charAt(i+1) : ' ');
             if (proj != null && proj.isMakeCompatible()) {
             	if (let == '\n') let = ' ';
             	else if (let == '\r') continue;
@@ -99,6 +100,9 @@ public class CompFunction {
             	// usado quando tem funcao num gravar 
             	// ou num objeto no tomcat 5
                 resp.append("\\$");
+            } else if (let == '#' && let2 == '{') {
+            	// usado para não processar expressões regulares
+                resp.append("\\#");
             } else {
                 resp.append(let);
             }
@@ -328,6 +332,9 @@ public class CompFunction {
                 // Existe no Gravar
                 if (mGetName.equals("getDisableProduce")) {
                     mGetName = "isDisableProduce";
+                }
+                if (mGetName.equals("getDecodeJson")) {
+                    mGetName = "isDecodeJson";
                 }
 
                 Method mRef = ele.getClass().getMethod(mGetName, new Class[0]);

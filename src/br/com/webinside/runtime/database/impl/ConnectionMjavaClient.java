@@ -27,8 +27,8 @@ import java.util.Map;
 
 import br.com.webinside.runtime.database.ErrorCode;
 import br.com.webinside.runtime.net.ClientSocket;
+import br.com.webinside.runtime.util.CrossContextFactory;
 import br.com.webinside.runtime.util.ErrorLog;
-import br.com.webinside.runtime.util.MjavaRepository;
 import br.com.webinside.runtime.util.StringA;
 import br.com.webinside.runtime.util.WIMap;
 
@@ -36,7 +36,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ConnectionMjavaClient {
     private String srvHost;
@@ -294,14 +294,14 @@ public class ConnectionMjavaClient {
                     update = -11;
                 }
             } else if (persistent) {
-            	Map hosts = MjavaRepository.mjavaPersistent;
+            	Map hosts = CrossContextFactory.mjavaPersistent();
               	synchronized (hosts) {
                 	List ports = (List) hosts.get(srvHost + ":" + srvPort);
               		if (ports == null) {
               			ports = new ArrayList();
               			hosts.put(srvHost + ":" + srvPort, ports);
               		}
-              		ports.add(new Integer(porta));
+              		ports.add(Integer.valueOf(porta));
                 }	
             }
         } catch (IOException err) {
@@ -331,7 +331,7 @@ public class ConnectionMjavaClient {
             mPort = new ConnectionMjavaPort(this, srvHost, srvPort);
         }
         SlavePort slavePort = new SlavePort();
-    	Map hosts = MjavaRepository.mjavaPersistent;
+    	Map hosts = CrossContextFactory.mjavaPersistent();
         synchronized (hosts) {
         	List ports = (List) hosts.get(srvHost + ":" + srvPort);
 	        if (ports != null && ports.size() > 0) {

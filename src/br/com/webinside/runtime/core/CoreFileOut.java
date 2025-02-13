@@ -28,7 +28,7 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CoreFileOut extends CoreCommon {
     private FileOut fileout;
@@ -83,7 +83,7 @@ public class CoreFileOut extends CoreCommon {
             texto = texto + "\r\n";
         }
         if (content.toLowerCase().startsWith("wi.context")) {
-        	texto = EngFunction.wiContext(wiMap, content) + "\r\n";
+        	texto = RtmFunction.wiContext(wiMap, content) + "\r\n";
         }
         fl.writeText(texto);
         fl.close();

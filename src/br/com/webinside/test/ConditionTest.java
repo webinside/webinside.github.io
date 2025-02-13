@@ -106,6 +106,7 @@ public class ConditionTest extends TestCase {
 		assertFalse(execute("-3#=0"));
 		assertFalse(execute("-3#=3"));
 		assertFalse(execute("3#=-3"));
+		assertTrue(execute("10>6,0"));
 	}
 	
 	private boolean execute(String expression) {

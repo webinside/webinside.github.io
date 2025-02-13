@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import br.com.webinside.runtime.database.impl.ConnectionSql;
 import br.com.webinside.runtime.integration.AbstractConnector;
@@ -81,14 +82,18 @@ public abstract class AbstractConnectorDB extends AbstractConnector {
     	} else if (type == 'E') {
             rs = dbMetaData.getExportedKeys(null, null, table);
     	}
+		Map<Integer, String> reorder = new TreeMap();
         while (rs.next()) {
     	    int numCols = rs.getMetaData().getColumnCount();
     	    String[] cols = new String[numCols];
     	    for (int i = 1; i <= numCols; i++) {
-    	    	cols[i - 1] = rs.getString(i); 
+    	    	cols[i - 1] = rs.getString(i);
     	    }
         	if (type == 'P') {
     	    	map.put(rs.getString(4), cols);
+    	    	if (rs.getInt(5) > 0) {
+        	    	reorder.put(rs.getInt(5), rs.getString(4));
+    	    	}
         	} else if (type == 'I') {
     	    	map.put(rs.getString(8), cols);
     	    } else if (type == 'E') {
@@ -96,6 +101,14 @@ public abstract class AbstractConnectorDB extends AbstractConnector {
     	    }	
         }
 		rs.close();
+        if (!reorder.isEmpty()) {
+    		Map map2 = new LinkedHashMap();
+        	for (Map.Entry<Integer, String> entry : reorder.entrySet()) {
+        		String key = entry.getValue(); 
+				map2.put(key, map.get(key));
+			}
+        	map = map2;
+        }
 		return map;
 	}
 	

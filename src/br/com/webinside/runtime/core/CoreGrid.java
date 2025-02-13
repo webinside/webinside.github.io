@@ -29,6 +29,7 @@ import br.com.webinside.runtime.component.GridSql;
 import br.com.webinside.runtime.component.GridXmlOut;
 import br.com.webinside.runtime.component.WIObjectGrid;
 import br.com.webinside.runtime.database.ResultSet;
+import br.com.webinside.runtime.export.GridNode;
 import br.com.webinside.runtime.integration.DatabaseHandler;
 import br.com.webinside.runtime.integration.IntFunction;
 import br.com.webinside.runtime.integration.Producer;
@@ -39,7 +40,7 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.5 $
  */
 public class CoreGrid extends CoreCommon {
     private GridRef gridref;
@@ -84,6 +85,10 @@ public class CoreGrid extends CoreCommon {
             return;
         }
         if (grid instanceof GridSql) {
+        	if (!cond) {
+        		GridSql gridsql = (GridSql) grid;
+	        	gridsql.setSql("select 1 from dual");
+        	}
             gridLinear(grid, returnEmpty);
         } else if (grid instanceof GridXmlOut) {
             GridXmlOut xmlout = (GridXmlOut) grid;
@@ -116,7 +121,7 @@ public class CoreGrid extends CoreCommon {
         }
         DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
         if ((db == null) || (!db.isConnected())) {
-            EngFunction.databaseError(wiParams, dbalias);
+            RtmFunction.databaseError(wiParams, dbalias);
             return;
         }
         String wiobj = "grid." + grid.getId().trim();
@@ -124,6 +129,7 @@ public class CoreGrid extends CoreCommon {
         if (!gridref.getSubId().trim().equals("")) {
         	wiSubId += "." + gridref.getSubId().trim();
         }
+    	wiMap.put(wiobj + ".title", grid.getDescription());
         // recebendo limites
         int limit = 0;
         try {
@@ -154,13 +160,15 @@ public class CoreGrid extends CoreCommon {
             range = 0;
         }
         wiMap.put(wiSubId + ".limit", limit);
-        db.setCharFilter(EngFunction.cleanSpace(gridsql.getSqlFilter()), "");
+        db.setCharFilter(RtmFunction.cleanSpace(gridsql.getSqlFilter()), "");
         long ini = new Date().getTime();
         Exception exrs = null;
         ResultSet rs = null;
         try {
             rs = db.execute(gridsql.getSql(), wiMap, next, range);
+            GridNode.include(wiParams, wiMap, gridsql, db.getExecutedSQL());
         } catch (Exception err) {
+        	GridNode.exclude(wiParams, gridsql); 
             exrs = err;
         }
         long fim = new Date().getTime();
@@ -187,6 +195,7 @@ public class CoreGrid extends CoreCommon {
             if (countpos > 0) {
                 wiMap.put(wiSubId + ".from", next);
             }
+	    	String clText = wiMap.get(wiSubId + ".contentlimit").trim();
             int to = 0;
             while ((countpos > 0) && ((limit == 0) || (count < limit))) {
             	to = countpos;
@@ -197,10 +206,11 @@ public class CoreGrid extends CoreCommon {
                 aux.put("rowseq", count + "");
                 mapList.add(aux);
                 countpos = rs.next();
-                if (!directout && (mapList.size() >= 10000)) {
-    		        String msg = "Grid " + wiobj + " content limit exceded\r\n";
-                	wiParams.getErrorLog().write("CoreGrid", "Map Array", 
-                			msg + wiMap);
+                if (!directout && mapList.size() >= 10000 
+                		&& !clText.equalsIgnoreCase("nolimit")) {
+                	String tId = wiSubId.substring(5, wiSubId.length());
+    		        String msg = "Grid " + tId + " content limit exceded\r\n";
+                	wiParams.getErrorLog().write("CoreGrid", "Map Array", msg + wiMap);
                 	break;
                 } 
             }

@@ -23,6 +23,7 @@ import br.com.webinside.runtime.component.SetElement;
 import br.com.webinside.runtime.integration.IntFunction;
 import br.com.webinside.runtime.integration.ProducerParam;
 import br.com.webinside.runtime.util.Encrypter;
+import br.com.webinside.runtime.util.Function;
 import br.com.webinside.runtime.util.StringA;
 import br.com.webinside.runtime.util.WIMap;
 
@@ -30,7 +31,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.5 $
  */
 public class CoreSetElement extends CoreCommon {
     private SetElement set;
@@ -112,8 +113,7 @@ public class CoreSetElement extends CoreCommon {
                         if (aux != null) {
                             aux = aux.cloneMe();
                         }
-                    } catch (ClassCastException err) {
-                    }
+                    } catch (ClassCastException err) { }
                     if (subdata.trim().equals("")) {
                         IntFunction.killObjAndVector(wiMap, subobj);
                     } else {
@@ -124,7 +124,7 @@ public class CoreSetElement extends CoreCommon {
                 } else {
                     String value = "";
                     if (subdata.toLowerCase().startsWith("|$wi.context")) {
-                    	value = EngFunction.wiContext(wiMap, subdata);
+                    	value = RtmFunction.wiContext(wiMap, subdata);
                     } else if (subdata.equalsIgnoreCase("|$wi.syncContext$|")) {
                     	Context ctx = new Context(wiParams);
                     	ctx.syncWIMap(wiMap);
@@ -137,11 +137,15 @@ public class CoreSetElement extends CoreCommon {
                         wiParams.getProducer().execute();
                         value = prod.getOutput();
                     }
-                    if (value.trim().equals("")) {
-                        wiMap.remove(subobj);
+                    if (set.isDecodeJson()) {
+                    	Function.decodeJSON(wiMap, value, subobj);
                     } else {
-                    	if (value.trim().equals("&nbsp;")) value = "";
-                        wiMap.put(subobj, value);
+                        if (value.trim().equals("")) {
+                            wiMap.remove(subobj);
+                        } else {
+                        	if (value.trim().equals("&nbsp;")) value = "";
+                            wiMap.put(subobj, value);
+                        }
                     }
                 }
             }

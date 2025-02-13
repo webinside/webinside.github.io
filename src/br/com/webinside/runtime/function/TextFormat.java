@@ -29,7 +29,7 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.16 $
  */
 public class TextFormat extends AbstractFunction {
     /** DOCUMENT ME! */
@@ -57,6 +57,8 @@ public class TextFormat extends AbstractFunction {
     /** DOCUMENT ME! */
     private static final String FILE = "file";
     /** DOCUMENT ME! */
+    private static final String UFILE = "ufile";
+    /** DOCUMENT ME! */
     private static final String LEN = "len";
     /** DOCUMENT ME! */
     private static final String LABEL = "lbl";
@@ -64,6 +66,8 @@ public class TextFormat extends AbstractFunction {
     private static final String CAPITALIZE = "cap";
     /** DOCUMENT ME! */
     private static final String SPLIT = "split";
+    /** DOCUMENT ME! */
+    private static final String PIECE = "piece";
     /** DOCUMENT ME! */
     private static final String IDENT = "ident";
     /** DOCUMENT ME! */
@@ -112,7 +116,7 @@ public class TextFormat extends AbstractFunction {
             } else if (action.equalsIgnoreCase(FILTERED)) {
                 result = StringA.getUsAscii(text);
             } else if (action.equalsIgnoreCase(TRIM)) {
-                result = doTrim(text);
+                result = text.replaceAll("\\s+", " ").trim();
             } else if (action.equalsIgnoreCase(CGI)) {
                 result = StringA.getCgi(text);
             } else if (action.equalsIgnoreCase(UPPERCASE)) {
@@ -122,10 +126,11 @@ public class TextFormat extends AbstractFunction {
             } else if (action.equalsIgnoreCase(ENTER2BR)) {
             	result = StringA.changeChars(text, "\r", "");
                 result = StringA.change(result, "\n", "<BR>\n");
-            } else if (action.equalsIgnoreCase(FILE)) {
-            	result = StringA.changeChars(text, "\r\n\\/:*?\"'<>|ºª°@#$%&", "");
-            	result = StringA.getUsAscii(doTrim(result.toLowerCase()));
-            	result = StringA.changeChars(result, " ", "_");
+            } else if (action.equalsIgnoreCase(FILE) || action.equalsIgnoreCase(UFILE)) {
+            	result = StringA.getForFile(text.toLowerCase());
+            	if (action.equalsIgnoreCase(UFILE)) {
+            		result = result.toUpperCase();
+            	}
 	        } else if (action.equalsIgnoreCase(LEN)) {
 	        	result = text.trim().length() + "";
 	        } else if (action.equalsIgnoreCase(CAPITALIZE)) {
@@ -143,20 +148,7 @@ public class TextFormat extends AbstractFunction {
 	        } else if (action.equalsIgnoreCase(TAGVALUE)) {
 	            return StringA.change(text, "\"", "&quot;");
 	        } else if (action.equalsIgnoreCase(MSWORD)) {
-	        	String s = text;
-	    		s = s.replace((char)145, (char)'\''); // left single
-	    		s = s.replace((char)8216, (char)'\''); // left single
-	    		s = s.replace((char)146, (char)'\''); // right single
-	    		s = s.replace((char)8217, (char)'\''); // right single
-	    		s = s.replace((char)147, (char)'\"'); // left double
-	    		s = s.replace((char)8220, (char)'\"'); // left double
-	    		s = s.replace((char)148, (char)'\"'); // right double
-	    		s = s.replace((char)8221, (char)'\"'); // right double
-	    		s = s.replace((char)150, (char)'-'); // em dash
-	    		s = s.replace((char)8211, (char)'-'); // em dash    
-	    		s = s.replace((char)151, (char)'-'); // em dash
-	    		s = s.replace((char)8212, (char)'-'); // em dash    
-	    		return s;
+	    		return wordFilter(text);
 	        } 
         } else if (args.length == 3) {
         	if (action.equalsIgnoreCase(LEFT)) {
@@ -200,6 +192,8 @@ public class TextFormat extends AbstractFunction {
         		result = doLeft(text, size, args[3]);
         	} else if (action.equalsIgnoreCase(REPLACE)) {
                 result = doReplace(text, args[2], args[3]);
+        	} else if (action.equalsIgnoreCase(PIECE)) {
+                result = StringA.piece(text, args[2], Function.parseInt(args[3])).trim(); 
             } else if (action.equalsIgnoreCase(TRUNCATE)) {
                 int tam = Integer.parseInt(args[2]);
                 result = (text.length() > tam) ? 
@@ -216,24 +210,12 @@ public class TextFormat extends AbstractFunction {
     }
 
     private String doReplace(String text, String oldSeq, String newSeq) {
+    	if (oldSeq.equals("")) {
+    		text = text.trim().replaceAll(" +", " ");    		
+    		oldSeq = " ";  
+    	}
         return StringA.change(text, StringA.showLineBreak(oldSeq),
             StringA.showLineBreak(newSeq));
-    }
-
-    private String doTrim(String str) {
-        java.util.StringTokenizer st = new java.util.StringTokenizer(str, " ");
-        StringBuffer sb = new StringBuffer();
-        boolean firstToken = true;
-        while (st.hasMoreTokens()) {
-            if (!firstToken) {
-                sb.append(' ');
-            }
-            sb.append(st.nextToken());
-            if (firstToken) {
-                firstToken = false;
-            }
-        }
-        return sb.toString();
     }
 
     private String doLeft(String str, int size, String compl) {
@@ -268,6 +250,22 @@ public class TextFormat extends AbstractFunction {
     		if (text.equalsIgnoreCase(p1)) return p2;
     	}
     	return "";
+    }
+    
+    public static String wordFilter(String s) {
+		s = s.replace((char)145, (char)'\''); // left single
+		s = s.replace((char)8216, (char)'\''); // left single
+		s = s.replace((char)146, (char)'\''); // right single
+		s = s.replace((char)8217, (char)'\''); // right single
+		s = s.replace((char)147, (char)'\"'); // left double
+		s = s.replace((char)8220, (char)'\"'); // left double
+		s = s.replace((char)148, (char)'\"'); // right double
+		s = s.replace((char)8221, (char)'\"'); // right double
+		s = s.replace((char)150, (char)'-'); // em dash
+		s = s.replace((char)8211, (char)'-'); // em dash    
+		s = s.replace((char)151, (char)'-'); // em dash
+		s = s.replace((char)8212, (char)'-'); // em dash    
+		return s;
     }
     
 }

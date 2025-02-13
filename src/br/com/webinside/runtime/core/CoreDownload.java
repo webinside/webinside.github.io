@@ -22,11 +22,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.zip.InflaterInputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import sun.misc.BASE64Decoder;
 import br.com.webinside.runtime.component.AbstractDownload;
 import br.com.webinside.runtime.component.DownloadDatabase;
 import br.com.webinside.runtime.component.DownloadFtp;
@@ -46,7 +46,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.7 $
  */
 public class CoreDownload extends CoreCommon {
     /** DOCUMENT ME! */
@@ -161,7 +161,7 @@ public class CoreDownload extends CoreCommon {
 	                response.flushBuffer();
 	            } catch (IOException err) {}  
             }
-            new Export(wiParams).sendFile(wiMap, fl.getAbsolutePath(), active);
+            new RtmExport(wiParams).sendFile(wiMap, fl.getAbsolutePath(), active);
             wiParams.setRequestAttribute("wiExit", "true");            
         } else {
             sendNoFile(dow.getNoFile(), active);
@@ -181,7 +181,7 @@ public class CoreDownload extends CoreCommon {
             ftp = new ClientFtp(host.getAddress(), host.getUser(),
                     host.getPass());
             if (!ftp.isConnected()) {
-                EngFunction.hostError(wiParams, dow.getHostId());
+                RtmFunction.hostError(wiParams, dow.getHostId());
                 return;
             }
         }
@@ -204,10 +204,10 @@ public class CoreDownload extends CoreCommon {
         String dbalias = dow.getDatabase();
         DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
         if ((db == null) || (!db.isConnected())) {
-            EngFunction.databaseError(wiParams, dbalias);
+            RtmFunction.databaseError(wiParams, dbalias);
             return;
         }
-        db.setCharFilter(EngFunction.cleanSpace(dow.getSqlFilter()), "");
+        db.setCharFilter(RtmFunction.cleanSpace(dow.getSqlFilter()), "");
         Exception exrs = null;
         ResultSet rs = null;
     	auxcontext.put("wi.download", "true");
@@ -223,11 +223,18 @@ public class CoreDownload extends CoreCommon {
                 FileOutputStream myout = new FileOutputStream(mytemp);
                	rs.columnBin(myout, 1);
                 myout.close();
+                String[] names = rs.columnNames();
+                for (int i = 1; i < names.length; i++) {
+                    String value = rs.column(i + 1);
+                    auxcontext.put(names[i], value);
+                    //deprecated = auxcontext.put((i + 1) + "", value);
+                }
+                wiParams.getDatabaseAliases().closeAll();
                 if (dow.isBase64()) {
                     String mytemp2 = Function.rndTmpFile("dow", "tmp");
                     FileInputStream in = new FileInputStream(mytemp);
                     FileOutputStream out = new FileOutputStream(mytemp2);
-                    new BASE64Decoder().decodeBuffer(in, out);
+                    Function.copyStream(Base64.getDecoder().wrap(in), out);
                     out.close();
                     in.close();
                 	new File(mytemp).delete();
@@ -238,22 +245,11 @@ public class CoreDownload extends CoreCommon {
                     InflaterInputStream in = 
                     	new InflaterInputStream(new FileInputStream(mytemp));
                     FileOutputStream out = new FileOutputStream(mytemp2);
-                    byte[] trecho = new byte[10240];
-                    int quant = 0;
-                    while ((quant = in.read(trecho)) > -1) {
-                        out.write(trecho, 0, quant);
-                        out.flush();
-                    }
-                    out.close();
-                    in.close();
+                    Function.copyStream(in, out);
+                    Function.closeStream(in);
+                    Function.closeStream(out);
                 	new File(mytemp).delete();
                 	mytemp = mytemp2;
-                }
-                String[] names = rs.columnNames();
-                for (int i = 1; i < names.length; i++) {
-                    String value = rs.column(i + 1);
-                    auxcontext.put(names[i], value);
-                    //deprecated = auxcontext.put((i + 1) + "", value);
                 }
             } else if (rs == null) {
             	queryException(exrs, db, dow.getDescription());
@@ -302,7 +298,7 @@ public class CoreDownload extends CoreCommon {
                 response.flushBuffer();
             } catch (IOException err) {}  
         }
-        new Export(wiParams).sendFile(wiMap, enviar.getAbsolutePath(), exec);
+        new RtmExport(wiParams).sendFile(wiMap, enviar.getAbsolutePath(), exec);
         wiParams.setRequestAttribute("wiExit", "true");        
     }
 }

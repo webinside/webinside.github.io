@@ -2,6 +2,8 @@ package br.com.webinside.runtime.function;
 
 import java.io.File;
 
+import org.apache.commons.io.FileUtils;
+
 import br.com.webinside.runtime.exception.UserException;
 import br.com.webinside.runtime.integration.AbstractConnector;
 import br.com.webinside.runtime.integration.DatabaseAliases;
@@ -31,7 +33,8 @@ public class HtmlToPdf extends AbstractConnector implements InterfaceParameters 
 	        } else {
 	        	File destFile = new File(wiMap.get("tmp.pdf_dest"),name);
 	        	destFile.getParentFile().mkdirs();
-	        	tmpPdf.renameTo(destFile);
+	        	FileUtils.copyFile(tmpPdf, destFile);
+	        	tmpPdf.delete();
 	        }
 		} catch (Exception err) {
 			err.printStackTrace();

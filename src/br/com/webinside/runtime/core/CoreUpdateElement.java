@@ -24,6 +24,7 @@ import br.com.webinside.runtime.component.ObjectElement;
 import br.com.webinside.runtime.component.UpdateElement;
 import br.com.webinside.runtime.integration.Condition;
 import br.com.webinside.runtime.integration.DatabaseHandler;
+import br.com.webinside.runtime.integration.IntFunction;
 import br.com.webinside.runtime.integration.ProducerParam;
 import br.com.webinside.runtime.util.Function;
 import br.com.webinside.runtime.util.StringA;
@@ -33,7 +34,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.5 $
  */
 public class CoreUpdateElement extends CoreCommon {
     private UpdateElement update;
@@ -78,20 +79,20 @@ public class CoreUpdateElement extends CoreCommon {
             return;
         }
         String dbalias = update.getDatabase();
-        DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
-        if ((db == null) || (!db.isConnected())) {
-            EngFunction.databaseError(wiParams, dbalias);
+        DatabaseHandler dh = wiParams.getDatabaseAliases().get(dbalias);
+        if ((dh == null) || (!dh.isConnected())) {
+            RtmFunction.databaseError(wiParams, dbalias);
             return;
         }
         if (update.getPrefix().trim().equals("")) {
-            unique(db);
+            unique(dh);
         } else {
-            multiple(db);
+            multiple(dh);
         }
         writeLog();
     }
 
-    private void unique(DatabaseHandler db) {
+    private void unique(DatabaseHandler dh) {
         WIMap auxhash = callObject(update.getPrefix().trim(), "");
         if (wiParams.mustExit()) {
             return;
@@ -102,7 +103,7 @@ public class CoreUpdateElement extends CoreCommon {
 		wiMap.remove("wi.transaction.none");
         if (wiMap.get("wi.transaction.status").equals("")) {
         	transaction = false;
-        	db.autocommit(autocommit);
+        	dh.autocommit(autocommit);
         }
         boolean allok = true;
         int count = StringA.count(aux, ';');        
@@ -117,13 +118,13 @@ public class CoreUpdateElement extends CoreCommon {
             	continue;
             }            	
             if (!sqlpart.trim().equals("")) {
-                uniqueCore(sqlpart, auxhash, db);
+                uniqueCore(sqlpart, auxhash, dh);
             }
-            if (!db.getErrorMessage().trim().equals("")) {
+            if (!dh.getErrorMessage().trim().equals("")) {
                 allok = false;
             }
             if (!allok && wiMap.get("wi.transaction.status").equals("true")) {
-            	wiMap.put("wi.transaction.status", db.getErrorMessage());
+            	wiMap.put("wi.transaction.status", dh.getErrorMessage());
             }
             if ((!autocommit || transaction) && (!allok)) {
                 break;
@@ -133,31 +134,31 @@ public class CoreUpdateElement extends CoreCommon {
         }
         if (!transaction) {
         	if (!autocommit) {
-        		if (allok) db.commit();
-        		else db.rollback();
+        		if (allok) dh.commit();
+        		else dh.rollback();
         	}
-        	db.autocommit(true);
+        	dh.autocommit(true);
         }	
     }
 
-    private void uniqueCore(String sqlpart, WIMap auxhash, DatabaseHandler db) {
+    private void uniqueCore(String sqlpart, WIMap auxhash, DatabaseHandler dh) {
         ProducerParam prod = new ProducerParam();
         prod.setWIMap(auxhash);
-        db.setCharFilter(EngFunction.cleanSpace(update.getSqlFilter()), "");
+        dh.setCharFilter(RtmFunction.cleanSpace(update.getSqlFilter()), "");
         long ini = new Date().getTime();
         Exception ex = null;
         int result = 0;
         try {
-            result = db.executeUpdate(sqlpart, auxhash);
+            result = dh.executeUpdate(sqlpart, auxhash);
         } catch (Exception err) {
         	if (!update.getNoException().equals("ON")) {
-                result = EngFunction.errorCodeSQL(err);
+                result = RtmFunction.errorCodeSQL(err);
                 ex = err;
         	}
         }
         long fim = new Date().getTime();
-        dbTime(db, auxhash, ini, fim, "update " + update.getDescription());
-        String sqlmsg = db.getErrorMessage();
+        dbTime(dh, auxhash, ini, fim, "update " + update.getDescription());
+        String sqlmsg = dh.getErrorMessage();
         auxhash.put("wi.sql.msg", StringA.piece(sqlmsg, ")", 2, 0).trim());
         String wiobj = update.getWIObj().trim();
         wiMap.put(wiobj + ".status()", result);
@@ -169,12 +170,13 @@ public class CoreUpdateElement extends CoreCommon {
             wiMap.put(wiobj, prod.getOutput());
         } else {
             wiMap.put(wiobj + ".ok()", "false");
-            onErrorCore(wiobj, result, db, ex, auxhash);
-            db.updateLog(wiMap, false);
+            IntFunction.setMessageError(wiMap, wiobj, dh.getErrorMessage());
+            onErrorCore(wiobj, result, dh, ex, auxhash);
+            dh.updateLog(wiMap, false);
         }
     }
 
-    private void multiple(DatabaseHandler db) {
+    private void multiple(DatabaseHandler dh) {
         String prefix = update.getPrefix().trim();
         ProducerParam prod = new ProducerParam();
         prod.setWIMap(wiMap);
@@ -199,7 +201,7 @@ public class CoreUpdateElement extends CoreCommon {
 		wiMap.remove("wi.transaction.none");
         if (wiMap.get("wi.transaction.status").equals("")) {
         	transaction = false;
-        	db.autocommit(autocommit);
+        	dh.autocommit(autocommit);
         }  
         for (int i = 1; i <= size; i++) {
             wiMap.put(wiobj + ".size()", i);
@@ -234,13 +236,13 @@ public class CoreUpdateElement extends CoreCommon {
                 }            	
                 if (!sqlpart.trim().equals("")) {
                     allok =
-                        multipleCore(prefix, wiobj, i, sqlpart, auxhash, db);
+                        multipleCore(prefix, wiobj, i, sqlpart, auxhash, dh);
                 }
-                if (!db.getErrorMessage().trim().equals("")) {
+                if (!dh.getErrorMessage().trim().equals("")) {
                     allok = false;
                 }
                 if (!allok && wiMap.get("wi.transaction.status").equals("true")) {
-                	wiMap.put("wi.transaction.status", db.getErrorMessage());
+                	wiMap.put("wi.transaction.status", dh.getErrorMessage());
                 }
                 if ((!autocommit || transaction) && (!allok)) {
                     break;
@@ -253,13 +255,13 @@ public class CoreUpdateElement extends CoreCommon {
             }
             if (!transaction) {
             	if (!autocommit) {
-            		if (allok) db.commit();
-            		else db.rollback();
+            		if (allok) dh.commit();
+            		else dh.rollback();
             	}
             }	
         }
         if (!transaction) {
-        	db.autocommit(true);
+        	dh.autocommit(true);
         }
         if (globalstatus == 1) {
             prod.setInput(update.getMessageTrue());
@@ -272,36 +274,37 @@ public class CoreUpdateElement extends CoreCommon {
             if (msg.equals("-1")) msg = "false";
             wiMap.put(wiobj, msg);
             wiMap.put(wiobj + ".ok()", "false");
+            IntFunction.setMessageError(wiMap, wiobj, msg);
         }
     }
 
     private boolean multipleCore(String prefix, String wiobj, int i,
-        String sqlpart, WIMap auxhash, DatabaseHandler db) {
+        String sqlpart, WIMap auxhash, DatabaseHandler dh) {
         ProducerParam prod = new ProducerParam();
         prod.setWIMap(auxhash);
         String subprefix = StringA.changeChars(prefix, "[]", "");
         auxhash.put(subprefix + "[" + i + "].index()", i);
         String sqlpart2 = sqlpart;
-        if (db.getDatabaseConnection().getType().equals("MJAVA")) {
+        if (dh.getDatabaseConnection().getType().equals("MJAVA")) {
             multipleMjava(auxhash, sqlpart, i);
         } else {
             sqlpart2 = changePrefix(sqlpart, prefix, i);
         }
-        db.setCharFilter(EngFunction.cleanSpace(update.getSqlFilter()), "");
+        dh.setCharFilter(RtmFunction.cleanSpace(update.getSqlFilter()), "");
         long ini = new Date().getTime();
         Exception ex = null;
         int result = 0;
         try {
-            result = db.executeUpdate(sqlpart2, auxhash);
+            result = dh.executeUpdate(sqlpart2, auxhash);
         } catch (Exception err) {
         	if (!update.getNoException().equals("ON")) {
-	            result = EngFunction.errorCodeSQL(err);
+	            result = RtmFunction.errorCodeSQL(err);
 	            ex = err;
         	}    
         }
         long fim = new Date().getTime();
-        dbTime(db, auxhash, ini, fim, "update " + update.getDescription());
-        String sqlmsg = db.getErrorMessage();
+        dbTime(dh, auxhash, ini, fim, "update " + update.getDescription());
+        String sqlmsg = dh.getErrorMessage();
         auxhash.put("wi.sql.msg", StringA.piece(sqlmsg, ")", 2, 0).trim());
         wiMap.put(wiobj + "[" + i + "].status()", result);
         if (result >= 0) {
@@ -313,8 +316,8 @@ public class CoreUpdateElement extends CoreCommon {
             return true;
         } else {
             wiMap.put(wiobj + "[" + i + "].ok()", "false");
-            onErrorCore(wiobj + "[" + i + "].message", result, db, ex, auxhash);
-            db.updateLog(wiMap, false);
+            onErrorCore(wiobj + "[" + i + "].message", result, dh, ex, auxhash);
+            dh.updateLog(wiMap, false);
         }
         return false;
     }
@@ -332,27 +335,27 @@ public class CoreUpdateElement extends CoreCommon {
         WIMap auxcontext = wiMap.cloneMe();
         WIMap origMap = wiParams.getWIMap();
         if (oe != null) {
-            wiParams.setParameter(ExecuteParams.WI_MAP, auxcontext);
+            wiParams.setParameter(ExecuteParamsEnum.WI_MAP, auxcontext);
             oe.setCondition("true");
             CoreObjectElement cobj = new CoreObjectElement(wiParams, oe);
             cobj.setPrefix(prefix, pos);
             cobj.execute();
-            wiParams.setParameter(ExecuteParams.WI_MAP, origMap);
+            wiParams.setParameter(ExecuteParamsEnum.WI_MAP, origMap);
         }
         return auxcontext;
     }
 
-    private void onErrorCore(String wiobj, int result, DatabaseHandler db, 
+    private void onErrorCore(String wiobj, int result, DatabaseHandler dh, 
     		Exception ex, WIMap auxhash) {
         String text = onErrorMessage(result, auxhash);
-        wiMap.put("wi.sql.query", db.getExecutedSQL());
-        wiMap.put("wi.sql.error", db.getErrorMessage());
+        wiMap.put("wi.sql.query", dh.getExecutedSQL());
+        wiMap.put("wi.sql.error", dh.getErrorMessage());
         wiMap.put(wiobj, text);
         String jspFile = wiMap.get("wi.jsp.filename");
         String description = update.getDescription();
-        String msgDetail = db.getErrorMessage() + 
-        	"\r\n--- SQL ---\r\n" + db.getExecutedSQL();
-        WIMap psMap = db.getExecutedSQLParams(auxhash); 
+        String msgDetail = dh.getErrorMessage() + 
+        	"\r\n--- SQL ---\r\n" + dh.getExecutedSQL();
+        WIMap psMap = dh.getExecutedSQLParams(auxhash); 
         if (psMap.keySet().size() > 0) {
         	msgDetail += "\r\n--- PARAMS ---\r\n";
         	msgDetail += psMap.toString();
@@ -383,19 +386,15 @@ public class CoreUpdateElement extends CoreCommon {
     }
 
     private String changePrefix(String text, String prefix, int pos) {
-        if (prefix == null) {
-            prefix = "";
-        }
+        if (prefix == null) prefix = "";
         String result = "";
         if (prefix.endsWith("[]")) {
             String subprefix = StringA.mid(prefix, 0, prefix.length() - 2);
             result =
-                StringA.change(text, "|" + prefix, "|" + subprefix + pos + "]",
-                    false);
+                StringA.change(text, "|" + prefix, "|" + subprefix + pos + "]", false);
         } else {
             result =
-                StringA.change(text, "|" + prefix + ".",
-                    "|" + prefix + pos + ".", false);
+                StringA.change(text, "|" + prefix + ".", "|" + prefix + pos + ".", false);
         }
         return result;
     }

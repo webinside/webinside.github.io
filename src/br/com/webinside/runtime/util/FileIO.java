@@ -32,7 +32,7 @@ import java.util.List;
  * Classe para ler e gravar arquivos texto.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.4 $
  *
  * @since 3.0
  */
@@ -68,18 +68,10 @@ public class FileIO {
      * Libera o arquivo do uso.
      */
     public void close() {
-        try {
-            if (in != null) {
-                in.close();
-                in = null;
-            }
-            if (out != null) {
-                out.close();
-                out = null;
-            }
-        } catch (IOException e) {
-        	e.printStackTrace(System.err);
-        }
+    	Function.closeStream(in);
+    	in = null;
+    	Function.closeStream(out);
+    	out = null;
     }
 
     /**
@@ -183,7 +175,7 @@ public class FileIO {
                         ((StringBuffer) obj).append(l).append(RET);
                     }
                 }
-                in.close();
+                Function.closeStream(in);
                 in = null;
             } catch (IOException err) {
             	err.printStackTrace(System.err);
@@ -237,11 +229,11 @@ public class FileIO {
                 out = new BufferedWriter(new FileWriter(file, append));
                 out.write(t, 0, t.length());
                 out.flush();
-                out.close();
-                out = null;
             } catch (IOException err) {
             	err.printStackTrace(System.err);
             }
+            Function.closeStream(out);
+            out = null;
         }
     }
 

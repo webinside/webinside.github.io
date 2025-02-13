@@ -46,7 +46,7 @@ public abstract class DatabaseManager {
 
     private static final Map<String, Integer> aliasRoundRobin = 
     	Collections.synchronizedMap(new HashMap());
-
+    
 	private String realAlias;
     private DatabaseConnection dbgeneric;
     private String poolPrefix;
@@ -63,9 +63,7 @@ public abstract class DatabaseManager {
      */
     public DatabaseManager(String type, String alias, String user, String pass) {
     	realAlias = (alias == null ? "" : alias);
-    	if (type == null) {
-            type = "";
-        }
+    	if (type == null) type = "";
         type = type.trim().toUpperCase();
         if (type.equals("JAVA")) {
             dbgeneric = new ConnectionJava();
@@ -85,13 +83,12 @@ public abstract class DatabaseManager {
      * @param database DOCUMENT ME!
      */
     public DatabaseManager(DatabaseManager database) {
-        if ((database == null) || (database.dbgeneric == null)) {
-            return;
+        if ((database != null) && (database.dbgeneric != null)) {
+        	realAlias = database.realAlias;
+            dbgeneric = database.dbgeneric.cloneMe();
+            dbgeneric.setParent(this);
+            poolPrefix = database.poolPrefix;
         }
-    	realAlias = database.realAlias;
-        dbgeneric = database.dbgeneric.cloneMe();
-        dbgeneric.setParent(this);
-        poolPrefix = database.poolPrefix;
     }
 
     /**
@@ -334,9 +331,8 @@ public abstract class DatabaseManager {
                 if (connections != null) {
             		Iterator it = new ArrayList(connections).iterator();            
                     while (it.hasNext()) {
-                    	DatabaseThreadNode node = 
-                    		(DatabaseThreadNode) it.next();
-                        if (node.equals(dbgeneric)) {
+                    	DatabaseThreadNode node = (DatabaseThreadNode) it.next();
+                        if (dbgeneric.equals(node.getDatabaseConnection())) {
                         	if (dbgeneric.isValid()) {
 	                            int minutes = dbgeneric.getConnectionTimeout();
 	                            node.setMaxTime(maxExpireTime(minutes));
@@ -555,6 +551,11 @@ public abstract class DatabaseManager {
 			}
     		pool.clear();
         }         
+    }
+    
+    public boolean isIntersys() {
+    	if (dbgeneric != null) return dbgeneric.isIntersys();
+    	return false;
     }
     
 }

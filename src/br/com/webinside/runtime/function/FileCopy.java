@@ -17,20 +17,16 @@
 
 package br.com.webinside.runtime.function;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 import br.com.webinside.runtime.integration.AbstractFunction;
+import br.com.webinside.runtime.util.Function;
 
 /**
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.4 $
  */
 public class FileCopy extends AbstractFunction {
     /**
@@ -58,28 +54,6 @@ public class FileCopy extends AbstractFunction {
     }
 
     private boolean copyFile(String fromFile, String toFile, boolean createDir) {
-        File arq = new File(fromFile);
-        if (!arq.isFile()) return false;
-        arq = new File(toFile);
-        if (arq.isFile()) arq.delete();
-        if ((createDir) && (!new File(arq.getParent()).exists())) {
-            new File(arq.getParent()).mkdirs();
-        }
-        byte[] trecho = new byte[10240];
-        int quant = 0;
-        try {
-            BufferedInputStream in =
-                new BufferedInputStream(new FileInputStream(fromFile));
-            BufferedOutputStream out =
-                new BufferedOutputStream(new FileOutputStream(toFile));
-            while ((quant = in.read(trecho)) > -1) {
-                out.write(trecho, 0, quant);
-            }
-            out.close();
-            in.close();
-        } catch (IOException err) {
-            return false;
-        }
-        return true;
+        return Function.copyFile(fromFile, toFile, createDir);
     }
 }

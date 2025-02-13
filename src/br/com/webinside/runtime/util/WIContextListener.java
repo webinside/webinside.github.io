@@ -118,7 +118,7 @@ public class WIContextListener implements ServletContextListener {
 					String className = listener.getChildText("listener-class");
 					Class clazz = Class.forName(className);
 					ServletContextListener scl = 
-						(ServletContextListener) clazz.newInstance();
+						(ServletContextListener) clazz.getConstructor().newInstance();
 					if (init) {
 						scl.contextInitialized(event);
 					} else {

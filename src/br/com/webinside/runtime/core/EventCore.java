@@ -44,7 +44,7 @@ import br.com.webinside.runtime.xml.Inputter;
  * DOCUMENT ME!
  *
  * @author Luiz Ruiz
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.3 $
  */
 public class EventCore {
     /** Map com as variáveis a serem lidas */
@@ -68,8 +68,10 @@ public class EventCore {
 	        out.println(getErrorPage(wiParams));
 	        return;
 		}
+		String evtPath = wiParams.getWIMap().get("evt_path").trim();
+		if (evtPath.equals("")) evtPath =  wiParams.getProject().getId();
         Function.setThreadName(df.format(new Date()) + 
-        		" - Start of EventCore of " + wiParams.getProject().getId());    	
+        		" - Start of EventCore of " + evtPath);    	
         out.println("<response>");
         if (wiParams.getHttpParameters().containsKey("tmp.wievent.update")) {
             update(wiParams);
@@ -82,12 +84,13 @@ public class EventCore {
         }
         readMap.put("wi.sql.query", wiParams.getWIMap().get("wi.sql.query"));
         readMap.put("wi.sql.error", wiParams.getWIMap().get("wi.sql.error"));
+        readMap.put("tmp.msgsecurevar", wiParams.getWIMap().get("tmp.msgsecurevar"));
         if (!readMap.isEmpty()) {
             out.println("<reads>");
             for (Iterator i = readMap.keySet().iterator(); i.hasNext();) {
                 String key = (String) i.next();
                 String value = (String) readMap.get(key);
-                if (!value.equals("")) {
+                if (!value.equals("") && !key.startsWith("pvt.")) {
                     out.println("<input name='" + key + "' value='" + value
                         + "' />");
                 }
@@ -189,6 +192,7 @@ public class EventCore {
             try {
                 wiParams.getHttpResponse().sendError(600);
             } catch (IOException e) {
+            	//ignorado
             }
         } else {
             new EventCoreSelect(wiParams, (EventSelect) evt).execute();

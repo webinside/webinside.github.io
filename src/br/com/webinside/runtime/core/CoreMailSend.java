@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
 import br.com.webinside.runtime.component.Host;
@@ -39,7 +38,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.3 $
  */
 public class CoreMailSend extends CoreCommon {
     private MailSend send;
@@ -103,7 +102,7 @@ public class CoreMailSend extends CoreCommon {
             	debug = wiParams.getWIMap().get("tmp.debug.smtp").trim();
             }
             String ids = build(hostname, user, pass, port, secure, debug);
-            wiParams.setParameter(ExecuteParams.WI_MAP, orig);
+            wiParams.setParameter(ExecuteParamsEnum.WI_MAP, orig);
             if (!ids.equals("")) {
                 String msg = "Emails stored to retry later. " +
                     "Connection failure to " + hostname;
@@ -189,10 +188,7 @@ public class CoreMailSend extends CoreCommon {
         }
         try {
 			message.setFrom(new InternetAddress(from, sender));
-		} catch (Exception e) { 
-			// ignorado
-		}
-
+		} catch (Exception e) { /*ignorado*/ }
         // add os TO
         message.setTo(toAddressArray(sendto, null));
         // add os CC
@@ -200,7 +196,6 @@ public class CoreMailSend extends CoreCommon {
         // add os BCC
         InternetAddress[] address = toAddressArray(send.getBcc(), prod);
         message.setBcc(address);
-        
         WIMap contextClone = wiParams.getWIMap().cloneMe();
         contextClone.put("wi.email", sendto);
         // Recursividade de lógica
@@ -272,9 +267,9 @@ public class CoreMailSend extends CoreCommon {
             WIMap orig = wiParams.getWIMap();
             auxMap.put("wi.jsp.filename_parent", orig.get("wi.jsp.filename"));
             auxMap.put("wi.jsp.filename", name + "_pre");
-            wiParams.setParameter(ExecuteParams.WI_MAP, auxMap);
+            wiParams.setParameter(ExecuteParamsEnum.WI_MAP, auxMap);
             wiParams.includePrePage(new Page(name));
-            wiParams.setParameter(ExecuteParams.WI_MAP, orig);
+            wiParams.setParameter(ExecuteParamsEnum.WI_MAP, orig);
         }
     }
     
@@ -290,10 +285,15 @@ public class CoreMailSend extends CoreCommon {
         StringTokenizer tk = new StringTokenizer(emails, ",");
         while (tk.hasMoreTokens()) {
         	String email = tk.nextToken().trim();
-    		if (!emails.equals("")) {
+        	String text = "";
+        	if (email.indexOf("=")>-1) {
+        		email = StringA.piece(email, "=", 1).trim();
+        		text = StringA.piece(email, "=", 2).trim();
+        	}
+    		if (!email.equals("")) {
     			try {
-        			address.add(new InternetAddress(email));
-    			} catch (AddressException ex) { }
+        			address.add(new InternetAddress(email, text));
+    			} catch (Exception ex) { }
     		}
         }
         InternetAddress[] resp = new InternetAddress[address.size()];

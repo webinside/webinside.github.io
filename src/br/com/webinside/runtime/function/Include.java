@@ -19,8 +19,8 @@ package br.com.webinside.runtime.function;
 
 import java.io.File;
 
-import br.com.webinside.runtime.core.EngFunction;
-import br.com.webinside.runtime.core.ExecuteParams;
+import br.com.webinside.runtime.core.ExecuteParamsEnum;
+import br.com.webinside.runtime.core.RtmFunction;
 import br.com.webinside.runtime.exception.UserException;
 import br.com.webinside.runtime.integration.AbstractFunction;
 import br.com.webinside.runtime.integration.IntFunction;
@@ -81,15 +81,15 @@ public class Include extends AbstractFunction {
 		    }
 		    String realname = StringA.piece(name, "?", 1);
 		    Producer producerOrig = getWiParams().getProducer();
-		    getWiParams().setParameter(ExecuteParams.PRODUCER, new Producer());
+		    getWiParams().setParameter(ExecuteParamsEnum.PRODUCER, new Producer());
 		    if (type.equals("combo")) {
-		    	EngFunction.generateCombo(getWiParams(), realname, false);
+		    	RtmFunction.generateCombo(getWiParams(), realname, false);
 		    } else if (type.equals("grid")) {
 		    	getWiParams().getWIMap().put("grid.generateInPage", false + "");
-		    	EngFunction.generateGrid(getWiParams(), realname, false);
+		    	RtmFunction.generateGrid(getWiParams(), realname, false);
 		    	getWiParams().getWIMap().remove("grid.generateInPage");
 		    }
-		    getWiParams().setParameter(ExecuteParams.PRODUCER, producerOrig);
+		    getWiParams().setParameter(ExecuteParamsEnum.PRODUCER, producerOrig);
 		    pos = end + 1;
 		    found = line.indexOf("|" + type + ".", pos);
 		}

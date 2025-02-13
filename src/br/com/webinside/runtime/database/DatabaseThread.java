@@ -30,7 +30,7 @@ import java.util.Map.Entry;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.3 $
  */
 public class DatabaseThread extends Thread {
 
@@ -40,13 +40,11 @@ public class DatabaseThread extends Thread {
 	
 	protected static final Map databasePool = 
     	Collections.synchronizedMap(new HashMap());
-
 	
 	public static synchronized void execute(String projId) {
-	  if (databaseStart) {
-	  	  databaseStart = false;
-		  new DatabaseThread(projId).start();
-	  }
+	  if (databaseStart != true) return;
+  	  databaseStart = false;
+	  new DatabaseThread(projId).start();
 	}
 
 	private DatabaseThread(String projId) { 
@@ -99,6 +97,10 @@ public class DatabaseThread extends Thread {
 	            }
 	        }
         }
+    }
+    
+    public static boolean isPoolEmpty() {
+    	return databasePool.isEmpty();
     }
     
 }

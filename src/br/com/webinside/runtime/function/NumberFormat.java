@@ -18,10 +18,12 @@
 package br.com.webinside.runtime.function;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.Locale;
 
 import br.com.webinside.runtime.integration.AbstractFunction;
+import br.com.webinside.runtime.util.CurrencyWriter;
 import br.com.webinside.runtime.util.StringA;
 import br.com.webinside.runtime.util.WIMap;
 
@@ -29,7 +31,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class NumberFormat extends AbstractFunction {
     /** DOCUMENT ME! */
@@ -44,6 +46,8 @@ public class NumberFormat extends AbstractFunction {
     private static final String CURRENCY_USA = "cus";
     /** DOCUMENT ME! */
     private static final String EXTENSO = "ext";
+    /** DOCUMENT ME! */
+    private static final String REAL = "real";
     /** DOCUMENT ME! */
     private static final String INTEGER_DIGITS = "int";
     /** DOCUMENT ME! */
@@ -123,13 +127,15 @@ public class NumberFormat extends AbstractFunction {
                     result = doCurrency(number, Locale.US, 2, true);
                 } else if (action.equalsIgnoreCase(EXTENSO)) {
                     result = doExtenso(number);
+                } else if (action.equalsIgnoreCase(REAL)) {
+                    result = new CurrencyWriter(true).write(new BigDecimal(number));                    
                 } else if (action.equalsIgnoreCase(INTEGER_DIGITS)) {
                     result = getIntegerDigits(number, '.');
                 } else if (action.equalsIgnoreCase(FRACTION_DIGITS)) {
                     result = getFractionDigits(number, '.');
                 } else if (action.equalsIgnoreCase(ROUND)) {
                 	BigDecimal bd = new BigDecimal(number);
-                	bd = bd.setScale(0, BigDecimal.ROUND_HALF_EVEN);
+                	bd = bd.setScale(0, RoundingMode.HALF_EVEN);
                     result = bd.toString();
                 } else if (action.equalsIgnoreCase(CLEARNUMBER)) {
                     result = getCleanNumber(number);

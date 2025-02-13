@@ -21,23 +21,19 @@ package br.com.webinside.runtime.util;
  * Classe que identifica a versão do WI e de seus componentes.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.32 $
+ * @version $Revision: 1.53 $
  *
  * @since 3.0
  */
 public abstract class WIVersion {
-	// 5.0.17 ou 5.1.3
     private final static int VERSION_MAJOR = 5; 
-    private final static int VERSION_MINOR = 0;
-    private final static int VERSION_RELEASE = 17;
-    // SERVICE_PACK = Pacote de correção onde o builder NÂO migra o projeto
-    public final static int SERVICE_PACK = 0;
-    // VERSION_DEBUG = Versão para efetuar um debug onde o builder migra o projeto
-    public final static int VERSION_DEBUG = 0;
+    private final static int VERSION_MINOR = 1;
+    private final static int VERSION_RELEASE = 5;
+    private final static int SERVICE_PACK = 0;
     /** Indica a versão do WI */ 
     public final static String VERSION = getVersion();
-    public final static String VERSION_NUMBER = getVersionNumber();
-    public final static String VERSION_FULL = getVersionFull();
+    public final static String VERSION_FILE = getFileVersion();
+    public final static String VERSION_WIPLUS = getVersionWIPlus();
     /** Indica a versão do Mjava */
     public final static String MJAVAVERSION = "3.1";
 
@@ -45,22 +41,24 @@ public abstract class WIVersion {
         StringBuffer ret = new StringBuffer();
         ret.append(VERSION_MAJOR).append(".").append(VERSION_MINOR);
         ret.append(".").append(VERSION_RELEASE);
+        if (SERVICE_PACK > 0) ret.append(".sp").append(SERVICE_PACK);
         return ret.toString();
     }
+    
+    private static String getFileVersion() {
+    	return StringA.change(VERSION, ".", "_");
+    }
 
-    private static String getVersionNumber() {
+    private static String getVersionWIPlus() {
     	String vmi = VERSION_MINOR + "";
     	if (vmi.length() < 2) vmi = "0" + vmi;
     	String vre = VERSION_RELEASE + "";
     	if (vre.length() < 2) vre = "0" + vre;
         return VERSION_MAJOR + vmi + vre;
     }
-
-    private static String getVersionFull() {
-        return getVersion() + "." + VERSION_DEBUG;
-    }
-    
+        
+    // Usado no ANT para gerar os JARS e WAR
     public static void main(String[] args) {
-		System.out.println(StringA.change(VERSION, ".", "_"));
+		System.out.println(VERSION_FILE);
 	}
 }

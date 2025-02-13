@@ -57,8 +57,8 @@ public class StringComparator implements Comparator {
                     s2 = StringA.piece(s2, delimiter, position);
                 }
                 if (integer) {
-                    Integer i1 = new Integer(s1.trim());
-                    Integer i2 = new Integer(s2.trim());
+                    Integer i1 = Integer.valueOf(s1.trim());
+                    Integer i2 = Integer.valueOf(s2.trim());
                     ret = i1.compareTo(i2);
                 } else if (ignoreCase) {
                     ret = s1.toLowerCase().compareTo(s2.toLowerCase());

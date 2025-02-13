@@ -25,7 +25,7 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.5 $
  */
 public class ExecuteSecurity {
     private ExecuteParams wiParams;
@@ -61,9 +61,7 @@ public class ExecuteSecurity {
 
     private boolean checkReferer(boolean pageSec) {
         String ref = wiParams.getHttpRequest().getHeader("referer");
-        if (ref == null) {
-            ref = "";
-        }
+        if (ref == null) ref = "";
         boolean ok = false;
         if (ref != null) {
             int qmark = ref.indexOf("?");
@@ -81,7 +79,7 @@ public class ExecuteSecurity {
                 cont = cont + 1;
             }
             String srvname =
-                EngFunction.getServerName(wiParams.getHttpRequest());
+                RtmFunction.getServerName(wiParams.getHttpRequest());
             String host = StringA.piece(ref, "/", 3);
             int port = wiParams.getHttpRequest().getServerPort();
             if (host.indexOf(":") > -1) {
@@ -95,7 +93,8 @@ public class ExecuteSecurity {
             }
         }
         if ((!ok) && (pageSec)) {
-            wiParams.sendError(HttpServletResponse.SC_FORBIDDEN);
+        	if (RtmFunction.bypassSecurity(wiParams)) return true;
+        	wiParams.sendError(HttpServletResponse.SC_FORBIDDEN);
             return false;
         }
         return true;

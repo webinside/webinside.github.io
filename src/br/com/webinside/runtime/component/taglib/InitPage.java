@@ -25,6 +25,7 @@ import javax.servlet.jsp.tagext.TagSupport;
 import br.com.webinside.runtime.component.Page;
 import br.com.webinside.runtime.core.Context;
 import br.com.webinside.runtime.core.ExecuteParams;
+import br.com.webinside.runtime.core.ExecuteParamsEnum;
 import br.com.webinside.runtime.util.WIMap;
 
 /**
@@ -56,7 +57,7 @@ public class InitPage extends TagSupport {
             if (obj instanceof ExecuteParams) {
                 wiParams = (ExecuteParams) obj;
                 if (wiParams.getRequestAttribute("wiGrid") == null) {
-	                wiParams.setParameter(ExecuteParams.OUT_WRITER,
+	                wiParams.setParameter(ExecuteParamsEnum.OUT_WRITER,
 	                    pageContext.getOut());   
                 }
                 if ((getName() != null) && (wiParams.getPage() == null)) {
@@ -64,7 +65,7 @@ public class InitPage extends TagSupport {
                     Page page = new Page(getName());
                     wiParams.getProject().getPages().putElement(page);
                     pageContext.setAttribute("wipage", page);
-                    wiParams.setParameter(ExecuteParams.PAGE, page);
+                    wiParams.setParameter(ExecuteParamsEnum.PAGE, page);
                     return EVAL_BODY_INCLUDE;
                 }
                 exit = false;
@@ -106,7 +107,7 @@ public class InitPage extends TagSupport {
 
     private void initWIMap() throws Exception {
 		WIMap wiMap = new Context(wiParams).getWIMap(true);
-        wiParams.setParameter(ExecuteParams.WI_MAP, wiMap);
+        wiParams.setParameter(ExecuteParamsEnum.WI_MAP, wiMap);
         String sqlLog = wiParams.getProject().getSqlLog();
         wiParams.getDatabaseAliases().setLog(sqlLog);
         wiParams.getDatabaseAliases().loadDatabases(wiParams.getProject());

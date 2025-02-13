@@ -21,6 +21,7 @@ public class In extends AbstractValidation {
 		        String texto = separador + value + separador;
 		        String lista = separador + args[0] + separador;
 		        if (lista.indexOf(texto) < 0) {
+		        	wiMap.remove(var);
 		        	return getMessage("in_not_found");
 		        }
 			}

@@ -25,7 +25,7 @@ import br.com.webinside.runtime.xml.*;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.5 $
  */
 public class ObjectElement extends AbstractActionElement {
 
@@ -265,10 +265,18 @@ public class ObjectElement extends AbstractActionElement {
         XMLFunction.setElemValue(object, "MULTIPLE", (multiple ? "ON" : ""));
     }
 
+    public String getProcjson() {
+        return XMLFunction.getElemValue(object, "PROCJSON");
+    }
+    
+    public void setProcjson(String procjson) {
+        XMLFunction.setElemValue(object, "PROCJSON", procjson);
+    }
+    
+    // LEGADO - Pode ser removido - compatibilidade anteriores a 5.1.4 (Diario Prefeitura)
     public boolean isUsejson() {
         return XMLFunction.getElemValue(object, "USEJSON").equals("ON");
     }
-    
     public void setUsejson(boolean multiple) {
         XMLFunction.setElemValue(object, "USEJSON", (multiple ? "ON" : ""));
     }

@@ -36,7 +36,7 @@ import br.com.webinside.runtime.util.WIMap;
  * Classe que implementa um TagLib para executar uma lógica do WI (Core).
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ExecuteCore extends TagSupport {
 
@@ -78,7 +78,11 @@ public class ExecuteCore extends TagSupport {
                 if (!timestamp.equals("")) {
                 	debugCore(wiParams, description, true, timestamp, 0);
                 }
-                Class cl = Class.forName("br.com.webinside.runtime.core.Core" + getType());
+                String fname = "br.com.webinside.runtime.core.Core" + getType();
+                if (fname.endsWith("CoreReport")) {
+                	fname = fname.replace(".core.", ".report.");
+                }
+                Class cl = Class.forName(fname);
                 Class[] args = new Class[2];
                 args[0] = ExecuteParams.class;
                 boolean isAbstract = false;

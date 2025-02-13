@@ -30,7 +30,7 @@ import java.util.Map.Entry;
  * Classe abstrata para gerar logs.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class AbstractLog {
     private File file;
@@ -117,7 +117,7 @@ public abstract class AbstractLog {
      * @return os atributos date e time.
      */
     public static String logDate() {
-        String sdate = Function.getDate("yyyy-MM-dd,HH:mm:ss");
+        String sdate = Function.getDate("yyyy-MM-dd,HH:mm:ss.SSS");
         return "DATE=\"" + sdate.substring(0, 10) + "\" TIME=\""
         + sdate.substring(11, sdate.length()) + "\"";
     }

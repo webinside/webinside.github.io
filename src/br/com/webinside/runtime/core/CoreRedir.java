@@ -34,7 +34,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.6 $
  */
 public class CoreRedir extends CoreCommon {
     private AbstractRedir redir;
@@ -68,7 +68,7 @@ public class CoreRedir extends CoreCommon {
                 wiParams.getProducer().setParam(prod);
                 wiParams.getProducer().execute();
                 String dest = prod.getOutput();
-                if (redir.hasReturn() && (dest.indexOf(".wsp") != -1)) {
+                if (redir.hasReturn() && (dest.indexOf(".wsp") > -1)) {
                     IntFunction.importParameters(wiMap, dest);
                     recursiveCore(dest);
                 } else {
@@ -85,12 +85,12 @@ public class CoreRedir extends CoreCommon {
         String dbalias = redirsql.getDatabase();
         DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
         if ((db == null) || (!db.isConnected())) {
-            EngFunction.databaseError(wiParams, dbalias);
+            RtmFunction.databaseError(wiParams, dbalias);
             return;
         }
         ProducerParam prod = new ProducerParam();
         prod.setWIMap(wiMap);
-        db.setCharFilter(EngFunction.cleanSpace(redirsql.getSqlFilter()), "");
+        db.setCharFilter(RtmFunction.cleanSpace(redirsql.getSqlFilter()), "");
         long ini = new Date().getTime();
         Exception exrs = null;
         ResultSet rs = null;

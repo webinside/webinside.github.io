@@ -60,7 +60,7 @@ import br.com.webinside.runtime.xml.Outputter;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CoreWebServiceClient extends CoreCommon {
 	
@@ -101,7 +101,7 @@ public class CoreWebServiceClient extends CoreCommon {
         String errorMsg = null;
         if ((host != null) && (host.getProtocol().equals("WEBSERVICE"))) {
             try {
-            	String endpoint = EngFunction.getEndpoint(host, 
+            	String endpoint = RtmFunction.getEndpoint(host, 
             			service, wiParams);
                 HttpURLConnection urlcon = 
                 	NetFunction.openConnection(endpoint);
@@ -127,7 +127,7 @@ public class CoreWebServiceClient extends CoreCommon {
                 String jspFile = wiMap.get("wi.jsp.filename");
                 wiParams.getErrorLog().write(jspFile, wsDescription, errorMsg);
         	} else { 
-        		EngFunction.hostError(wiParams, webservice.getHostId());
+        		RtmFunction.hostError(wiParams, webservice.getHostId());
         	}	
             return;
         }
@@ -145,7 +145,7 @@ public class CoreWebServiceClient extends CoreCommon {
             SOAPEnvelope env = message.getSOAPPart().getEnvelope();
             requestMessage(sendXmlBody, env);
             message.saveChanges();
-        	String endpoint = EngFunction.getEndpoint(host, 
+        	String endpoint = RtmFunction.getEndpoint(host, 
         			service, wiParams);
         	// suporte para funcionar com https
         	if (endpoint.startsWith("https://") && socketFactory == null) {
@@ -301,7 +301,7 @@ public class CoreWebServiceClient extends CoreCommon {
         ProducerParam prod = new ProducerParam();
         prod.setWIMap(wiMap);
         prod.setInput(template);
-        List lista = EngFunction.listPipeNames(template.toString());
+        List lista = RtmFunction.listPipeNames(template.toString());
         List refs = new ArrayList();
         for (int i = 0; i < lista.size(); i++) {
             String id = (String) lista.get(i);

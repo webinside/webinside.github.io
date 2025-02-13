@@ -17,20 +17,31 @@
 
 package br.com.webinside.runtime.util;
 
-import javax.crypto.*;
+import java.security.AlgorithmParameters;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-import java.math.BigInteger;
-import java.security.*;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 /**
  * Classe utilizada para criptogratia de textos.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.4 $
  *
  * @since 3.0
  */
 public class Crypto {
+	
+	private static Map<String, String> cacheDES = 
+			Collections.synchronizedMap(new HashMap());
+	
     private String strKey;
     private SecretKey desKey;
 
@@ -40,62 +51,43 @@ public class Crypto {
      * @param key a chave que será usada no DES.
      */
     public Crypto(String key) {
-        if (key == null) {
-            key = new String();
-        }
-        strKey = key;
-        try {
-            KeyGenerator kg = KeyGenerator.getInstance("DES", "SunJCE");
-            SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-            sr.setSeed(strKey.getBytes());            
-            kg.init(sr);
-            desKey = kg.generateKey();
-        } catch (Exception err) {
-        	err.printStackTrace(System.err);
-            // Nunca deve ocorrer.
-        }
+    	strKey = (key != null) ? key : "";
     }
 
-    /**
-     * Codifica um texto para o formato DES.
-     *
-     * @param text o texto a ser codificado.
-     *
-     * @return o texto no formato DES.
-     */
+    // --------------------------------------------------------------------------
+    
     public String encodeDES(String text) {
-        StringBuffer resp = new StringBuffer();
-        if (text != null) {
-            try {
-                Cipher cipher = Cipher.getInstance("DES", "SunJCE");
-                cipher.init(Cipher.ENCRYPT_MODE, desKey);
-                byte[] enc = cipher.doFinal(text.getBytes());
-                for (int i = 0; i < enc.length; i++) {
-                    if (((int) enc[i] & 0xff) < 0x10) {
-                        resp.append("0");
-                    }
-                    resp.append(Long.toString((int) enc[i] & 0xff, 16));
-                }
-            } catch (Exception err) {
-                err.printStackTrace(System.err);
-                // Nunca deve ocorrer.
-            }
-        }
-        return resp.toString();
-    }
-
-    /**
-     * Decodifica um texto no formato DES.
-     *
-     * @param text o texto no formato DES.
-     *
-     * @return o texto decodificado.
-     */
-    public String decodeDES(String text) {
-        if (text == null) {
-            return "";
+        if (text == null) return "";
+        if (cacheDES.containsKey(strKey + ":" + text)) {
+        	return cacheDES.get(strKey + ":" + text);
         }
         try {
+        	createSecretKey();
+            StringBuffer resp = new StringBuffer();
+            Cipher cipher = Cipher.getInstance("DES", "SunJCE");
+            cipher.init(Cipher.ENCRYPT_MODE, desKey);
+            byte[] enc = cipher.doFinal(text.getBytes());
+            for (int i = 0; i < enc.length; i++) {
+                if (((int) enc[i] & 0xff) < 0x10) {
+                    resp.append("0");
+                }
+                resp.append(Long.toString((int) enc[i] & 0xff, 16));
+            }
+            cacheDES.put(strKey + ":" + text, resp.toString());
+            return resp.toString();
+        } catch (Exception err) {
+        	System.err.println(err.getMessage());
+        }
+        return "";
+    }
+
+    public String decodeDES(String text) {
+        if (text == null) return "";
+        if (cacheDES.containsKey(strKey + ":" + text)) {
+        	return cacheDES.get(strKey + ":" + text);
+        }
+        try {
+        	createSecretKey();
             Cipher cipher = Cipher.getInstance("DES", "SunJCE");
             AlgorithmParameters algParams = cipher.getParameters();
             cipher.init(Cipher.DECRYPT_MODE, desKey, algParams);
@@ -106,43 +98,61 @@ public class Crypto {
                 msg[i / 2] = (byte) (Integer.parseInt(hex, 16));
             }
             byte[] dec = cipher.doFinal(msg);
-            return new String(dec).trim();
+            String resp = new String(dec).trim();
+            cacheDES.put(strKey + ":" + text, resp);
+            return resp;
         } catch (Exception err) {
         	System.err.println(err.getMessage() + " in password \"" + text + "\"");
         }
         return "";
     }
+    
+    private void createSecretKey() {
+        try {
+        	if (desKey == null) {
+	            KeyGenerator kg = KeyGenerator.getInstance("DES", "SunJCE");
+	            SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
+	            sr.setSeed(strKey.getBytes());            
+	            kg.init(sr);
+	            desKey = kg.generateKey();
+        	}   
+        } catch (Exception err) {
+        	err.printStackTrace(System.err);
+            // Nunca deve ocorrer.
+        }
+    }
+
+    // --------------------------------------------------------------------------
 
     public static String encodeMD5(String text) {
-        if (text != null) {
-            try {
-                MessageDigest digest = MessageDigest.getInstance("MD5");
-                digest.update(text.getBytes());
-                return new BigInteger(1, digest.digest()).toString(16);
-            } catch (NoSuchAlgorithmException err) {
-            	err.printStackTrace(System.err);
-                // Nunca deve ocorrer.
-            }
-        }
-        return "";
+    	return encodeHash("MD5", text);
     }
-    
+    	
     public static String encodeSHA1(String text) {
+    	return encodeHash("SHA1", text);
+    }
+    
+    private static String encodeHash(String alg, String text) {
+        StringBuffer resp = new StringBuffer();
         if (text != null) {
             try {
-                MessageDigest digest = MessageDigest.getInstance("SHA1");
-                digest.update(text.getBytes());
-                return new BigInteger(1, digest.digest()).toString(16);
+                MessageDigest digest = MessageDigest.getInstance(alg);
+                byte[] hash = digest.digest(text.getBytes());
+                for (int i = 0; i < hash.length; i++) {
+                    if (((int) hash[i] & 0xff) < 0x10) resp.append("0");
+                    resp.append(Long.toString((int) hash[i] & 0xff, 16));
+                }
             } catch (NoSuchAlgorithmException err) {
             	err.printStackTrace(System.err);
                 // Nunca deve ocorrer.
             }
         }
-        return "";
+        return resp.toString();
     }
-    
+        
     public static void main(String[] args) {
-    	System.out.println(Crypto.encodeSHA1("geraldo"));
+    	System.out.println(encodeMD5("G95MOOPUCS"));
+    	System.out.println(encodeSHA1("G95MOOPUCS"));
     }
-    
+        
 }

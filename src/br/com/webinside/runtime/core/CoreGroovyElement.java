@@ -19,15 +19,24 @@ package br.com.webinside.runtime.core;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+
+import java.io.File;
+
 import br.com.webinside.runtime.component.GroovyElement;
+import br.com.webinside.runtime.integration.IntFunction;
+import br.com.webinside.runtime.util.FileIO;
 
 /**
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.4 $
  */
 public class CoreGroovyElement extends CoreCommon {
+	
+	private static String importScript;
+	private static long importTime;
+	
     private GroovyElement groovy;
 
     /**
@@ -49,6 +58,7 @@ public class CoreGroovyElement extends CoreCommon {
         if (!isValidCondition()) {
             return;
         }
+        loadImport();
     	String variable = groovy.getVariable().toLowerCase().trim();
     	if (variable.equals("")) variable = "tmp.groovy";
         try {
@@ -63,9 +73,10 @@ public class CoreGroovyElement extends CoreCommon {
 	        binding.setVariable("request", wiParams.getHttpRequest());
 	        binding.setVariable("response", wiParams.getHttpResponse());
 	        binding.setVariable("errorLog", wiParams.getErrorLog());
+	        String code = importScript.trim() + "\r\n" + groovy.getCode();
 	        GroovyShell shell = new GroovyShell(binding);
 	        binding.setVariable("shell", shell);
-	        Object value = shell.evaluate(groovy.getCode());
+	        Object value = shell.evaluate(code);
 	        if (value != null) {
 	        	returnMessage(variable, value.toString(), true);
 	        }
@@ -75,6 +86,7 @@ public class CoreGroovyElement extends CoreCommon {
         	returnMessage(variable, "Erro ao executar: " + desc, false);
             wiMap.put(variable + ".ok()", "false");
         	wiMap.put(variable + ".error", err.getMessage());
+        	IntFunction.setMessageError(wiMap, variable, "Erro ao executar: " + desc);
         	if (err instanceof Exception) {
         		String name = getClass().getSimpleName();
         		String id = "page:" + wiMap.get("wi.page.id");
@@ -93,6 +105,33 @@ public class CoreGroovyElement extends CoreCommon {
     	}
     	if (wiMap.get(ret).equals("") || force) {
         	wiMap.put(ret, message);
+    	}
+    }
+    
+    private void loadImport() {
+    	String prjPath = wiMap.get("wi.proj.path");
+    	File importFile = new File(prjPath,"/WEB-INF/groovy/import.groovy");
+    	if (!importFile.isFile()) {
+    		importFile.getParentFile().mkdirs();
+    		StringBuilder sb = new StringBuilder();
+    		sb.append("import java.io.*;\r\n");
+    		sb.append("import java.util.*;\r\n");
+    		sb.append("import br.com.webinside.runtime.util.*;\r\n");
+    		sb.append("import br.com.webinside.runtime.database.*;\r\n");
+    		sb.append("import br.com.webinside.runtime.integration.*;\r\n");
+    		sb.append("\r\n");
+    		sb.append("def wiGroovyScript(name) {\r\n");
+    		sb.append("  String prjPath = wiMap.get(\"wi.proj.path\");\r\n");
+    		sb.append("  String script = prjPath + \"/WEB-INF/groovy/\" + name + \".groovy\";\r\n");
+    		sb.append("  return shell.parse(new File(script));\r\n");
+    		sb.append("}\r\n");
+    		FileIO io = new FileIO(importFile.getAbsolutePath(), 'W');
+    		io.writeText(sb.toString());
+    	}
+    	if (importScript == null || importTime < importFile.lastModified()) {
+    		FileIO io = new FileIO(importFile.getAbsolutePath(), 'R');
+    		importScript = io.readText();
+    		importTime = importFile.lastModified();
     	}
     }
     

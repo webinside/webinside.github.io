@@ -43,7 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import br.com.webinside.runtime.component.AbstractProject;
 import br.com.webinside.runtime.component.Host;
-import br.com.webinside.runtime.core.EngFunction;
+import br.com.webinside.runtime.core.RtmFunction;
 import br.com.webinside.runtime.core.ExecuteParams;
 import br.com.webinside.runtime.database.ResultSet;
 import br.com.webinside.runtime.exception.UserException;
@@ -58,7 +58,7 @@ import br.com.webinside.runtime.util.WISession;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.12 $
  */
 public class IntFunction {
 
@@ -97,19 +97,19 @@ public class IntFunction {
             }
         }
         if (!funcClass.equals("")) {
-        	if (ExecuteParams.getThreadClassLoader() == null) {
+        	if (ExecuteParams.get().getClassLoader() == null) {
         		String msg = "ExecuteParams.getThreadClassLoader()";
         		throw new NullPointerException(msg);
         	}
-            Class cl = ExecuteParams.getThreadClassLoader().loadClass(funcClass);
+            Class cl = ExecuteParams.get().getClassLoader().loadClass(funcClass);
             String[] argsArray = (String[]) argsList.toArray(new String[argsList.size()]);
             String resp = "";
             if (IntFunction.useCompat(cl)) {
-            	Class c = Class.forName("br.com.itx.engine.Compat");
-            	Method m = c.getMethod("connector", Class.class, ExecuteParams.class, String[].class, WIMap.class);
-            	resp = (String) m.invoke(c.newInstance(), cl, wiParams, argsArray, wiMap);
+            	Class c = Class.forName("br.com.itx.engine.CompatImpl");
+            	Method m = c.getMethod("function", Class.class, ExecuteParams.class, String[].class, WIMap.class);
+            	resp = (String) m.invoke(c.getConstructor().newInstance(), cl, wiParams, argsArray, wiMap);
             } else {
-                InterfaceFunction function = (InterfaceFunction) cl.newInstance();
+                InterfaceFunction function = (InterfaceFunction) cl.getConstructor().newInstance();
                 function.setWiMap(wiMap);
                 resp = function.execute(wiParams, argsArray);
             }
@@ -392,8 +392,7 @@ public class IntFunction {
         ExecuteParams wiParams = new ExecuteParams(request, response, sContext);
         request.setAttribute("wiParams", wiParams);
         try {
-            String jsp = wiParams.getWICVS() + "/project.jsp";
-            sContext.getRequestDispatcher(jsp).include(request, response);
+            sContext.getRequestDispatcher("/project.jsp").include(request, response);
         } catch (Exception err) {
             System.err.println(IntFunction.class.getName() + ": " + err);
         }
@@ -402,19 +401,21 @@ public class IntFunction {
         
     public static Locale getLocale(WIMap wiMap) {
 		Locale locale = Locale.getDefault();
-		String loc = wiMap.get("wi.locale");
-		if (!loc.equals("")) {
-			loc = StringA.changeChars(loc, "-", "_");
-			String p1 = StringA.piece(loc, "_", 1);
-			String p2 = StringA.piece(loc, "_", 2);
-			locale = new Locale(p1, p2);
-		}
+		if (wiMap != null) {
+			String loc = wiMap.get("wi.locale");
+			if (!loc.equals("")) {
+				loc = StringA.changeChars(loc, "-", "_");
+				String p1 = StringA.piece(loc, "_", 1);
+				String p2 = StringA.piece(loc, "_", 2);
+				locale = new Locale(p1, p2);
+			}
+		}	
 		return locale;
     }
 
 	public static Properties loadProperties(Properties props, String propsName) 
 	throws Exception {
-		ClassLoader classLoader = ExecuteParams.getThreadClassLoader();
+		ClassLoader classLoader = ExecuteParams.get().getClassLoader();
     	if (classLoader == null) {
     		String msg = "ExecuteParams.getThreadClassLoader()";
     		throw new NullPointerException(msg);
@@ -432,12 +433,17 @@ public class IntFunction {
         return props;
 	}
 
-	public static Map getSVMap(WISession session) {
-    	Map svMap = (Map) session.getAttribute("WISecureVars");
-    	if (svMap == null) {
-    		svMap = Collections.synchronizedMap(new HashMap());
-    		session.setAttribute("WISecureVars", svMap);
-    	}
+	public static Map getSVMap(WISession wisession) {
+    	Map svMap = (Map) wisession.getAttribute("WISecureVars");
+		if (svMap == null) {
+			synchronized (wisession.getHttpSession()) {
+				svMap = (Map) wisession.getAttribute("WISecureVars");
+				if (svMap == null) {
+		    		svMap = Collections.synchronizedMap(new HashMap());
+		    		wisession.setAttribute("WISecureVars", svMap);
+				}
+			}
+		}
     	return svMap;
 	}
 
@@ -451,18 +457,18 @@ public class IntFunction {
     	return svNode;
 	}
 
-	public static void clearSVMap(WISession session) {
-		if (!session.isValid()) return;
-    	Map<String,SVNode> svMap = (Map) session.getAttribute("WISecureVars");
+	public static void clearSVMap(WISession wisession) {
+		if (!wisession.isValid()) return;
+    	Map<String,SVNode> svMap = (Map) wisession.getAttribute("WISecureVars");
     	if (svMap == null) return;
-    	synchronized (session.getHttpSession()) {
-        	for (String key : new HashSet<String>(svMap.keySet())) {
-    			SVNode svNode = svMap.get(key);
-    			svNode.clear();
-    			if (svNode.isEmpty()) {
-    				svMap.remove(key);
-    			}
-    		}
+    	for (String key : new HashSet<String>(svMap.keySet())) {
+			SVNode svNode = svMap.get(key);
+			if (svNode != null) {
+				svNode.clear();
+				if (svNode.isEmpty()) {
+					svMap.remove(key);
+				}
+			}
 		}
 	}
 	
@@ -505,7 +511,7 @@ public class IntFunction {
         String dbalias = project.getLoginRolesDatabase();
         DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
         if ((db == null) || (!db.isConnected())) {
-            EngFunction.databaseError(wiParams, dbalias);
+            RtmFunction.databaseError(wiParams, dbalias);
             return;
         }
         db.setCharFilter(project.getLoginRolesSqlFilter(), "");
@@ -525,8 +531,10 @@ public class IntFunction {
             while ((pos = rs.next()) > 0) {
 				wiMap.put("pvt.login.role[" + (pos + 1) + "].name", rs.column(1));
 				wiMap.put("pvt.login.role.size()", (pos + 1));
-				String col2 = rs.column(2).trim();
-				if (!col2.equals("")) grpList.add(col2);
+				if (rs.columnNames().length>1) {
+					String col2 = rs.column(2).trim();
+					if (!col2.equals("")) grpList.add(col2);
+				}
             }
             if (grpList.size() > 0) {
             	StringBuilder sb = new StringBuilder();
@@ -543,5 +551,11 @@ public class IntFunction {
             wiMap.put("wi.sql.msg", StringA.piece(sqlmsg, ")", 2, 0).trim());
         }
     }	
-	
+
+    public static void setMessageError(WIMap wiMap, String var, String msg) {
+		if (var.equals("tmp.message") && wiMap.get("tmp.msg_error").equals("")) {
+			wiMap.put("tmp.msg_error", msg);
+		}
+    }
+    
 }

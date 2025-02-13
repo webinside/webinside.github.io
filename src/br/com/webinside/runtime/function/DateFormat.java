@@ -32,13 +32,13 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.10 $
  */
 public class DateFormat extends AbstractFunction {
     /** DOCUMENT ME! */
     private static final String ANSI_FORMAT = "yyyy-MM-dd";
     /** DOCUMENT ME! */
-    private static final String EXTENSO = "ext";
+    private static final String EXTENSO= "ext";
     /** DOCUMENT ME! */
     private static final String EXTENSO2 = "ext2";
     /** DOCUMENT ME! */
@@ -123,11 +123,11 @@ public class DateFormat extends AbstractFunction {
         } else if (action.equalsIgnoreCase(EXTENSO2)) {
         	result = doExtenso(date, java.text.DateFormat.LONG);
         } else if (action.equalsIgnoreCase(EXTENSO3)) {
-            result = doFormat(date, "yyyy-MM-dd", "dd MMM YYYY");
+            result = doFormat(date, "yyyy-MM-dd", "dd MMM yyyy");
         } else if (action.equalsIgnoreCase(EXTENSO4)) {
         	String dia = doFormat(date, "yyyy-MM-dd", "dd");
         	if (dia.equals("01")) dia = "1º";
-        	String mes_ano = doFormat(date, "yyyy-MM-dd", "'de' MMMM 'de' YYYY");
+        	String mes_ano = doFormat(date, "yyyy-MM-dd", "'de' MMMM 'de' yyyy");
         	result = dia + " " + mes_ano;
         } else if (action.equalsIgnoreCase(INCREMENT)) {
             result = doIncrement(date, arg3, arg4);
@@ -297,7 +297,7 @@ public class DateFormat extends AbstractFunction {
         if (oldPattern.equals("") || newPattern.equals("")) {
             return "";
         }
-        SimpleDateFormat sdf = new SimpleDateFormat(newPattern);
+        SimpleDateFormat sdf = new SimpleDateFormat(newPattern, getLocale());
         Date d = getDateFromPattern(date, oldPattern);
         if (d != null) {
             return sdf.format(d);

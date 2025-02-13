@@ -28,7 +28,7 @@ import sun.net.TelnetOutputStream;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class FtpClient extends TransferProtocolClient {
     /** DOCUMENT ME! */
@@ -337,7 +337,7 @@ public class FtpClient extends TransferProtocolClient {
      */
     public TelnetInputStream get(String filename, boolean pasv)
         throws IOException {
-        Socket s;
+        Socket s = null;
         try {
             if (!pasv) {
                 s = openDataConnection("RETR " + filename);
@@ -357,6 +357,7 @@ public class FtpClient extends TransferProtocolClient {
                 try {
                     cd(pathElement);
                 } catch (FtpProtocolException e) {
+                	if (s != null) s.close();
                     throw fileException;
                 }
             }
@@ -367,6 +368,7 @@ public class FtpClient extends TransferProtocolClient {
                     s = openDataConnectionPASV("RETR " + pathElement);
                 }
             } else {
+            	if (s != null) s.close();
                 throw fileException;
             }
         }

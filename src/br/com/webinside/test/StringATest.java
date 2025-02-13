@@ -111,7 +111,8 @@ public class StringATest extends TestCase {
     	
     }
     
-    public void testEquals() {
+    @SuppressWarnings("unlikely-arg-type")
+	public void testEquals() {
         StringA text1 = new StringA("text");
         StringA text2 = new StringA("text");
         Set set = new HashSet();

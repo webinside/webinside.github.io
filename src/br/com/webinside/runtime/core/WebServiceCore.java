@@ -51,7 +51,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class WebServiceCore {
     private WebServiceParams params;
@@ -78,13 +78,13 @@ public class WebServiceCore {
             return;
         }
         Page page = new Page(metodo.getPage());
-        params.getWiParams().setParameter(ExecuteParams.PAGE, page);
+        params.getWiParams().setParameter(ExecuteParamsEnum.PAGE, page);
         try {
             wiMap = new Context(params.getWiParams()).getWIMap(false);
         } catch (Exception err) {
             return;
         }
-        params.getWiParams().setParameter(ExecuteParams.WI_MAP, wiMap);
+        params.getWiParams().setParameter(ExecuteParamsEnum.WI_MAP, wiMap);
     	try {
         	String prefix = metodo.getObjIn().trim(); 
         	if (!prefix.equals("")) {
@@ -231,7 +231,7 @@ public class WebServiceCore {
     private boolean executePage() {
         StringWriter screen = new StringWriter();
         ExecuteParams execParams = params.getWiParams();
-        execParams.setParameter(ExecuteParams.OUT_WRITER, screen);
+        execParams.setParameter(ExecuteParamsEnum.OUT_WRITER, screen);
         execParams.getDatabaseAliases().setLog(project.getSqlLog());
         execParams.getDatabaseAliases().loadDatabases(project);
         execParams.setRequestAttribute("wiWebService", "true");
@@ -323,7 +323,7 @@ public class WebServiceCore {
     }
 
     private String produceRequestGridXML(String template) {
-        List lista = EngFunction.listPipeNames(template);
+        List lista = RtmFunction.listPipeNames(template);
         ExecuteParams wiParams = params.getWiParams();
         for (int i = 0; i < lista.size(); i++) {
             String id = (String) lista.get(i);
@@ -365,7 +365,7 @@ public class WebServiceCore {
         ProducerParam prod = new ProducerParam();
         prod.setWIMap(wiMap);
         prod.setInput(template);
-        List lista = EngFunction.listPipeNames(template);
+        List lista = RtmFunction.listPipeNames(template);
         for (int i = 0; i < lista.size(); i++) {
             String id = (String) lista.get(i);
             if (!id.toLowerCase().startsWith("grid.")) {

@@ -18,6 +18,8 @@
 package br.com.webinside.runtime.core;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -35,9 +37,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import br.com.webinside.runtime.component.Page;
 import br.com.webinside.runtime.exception.SessionTimeoutException;
+import br.com.webinside.runtime.function.SecureLinkManager;
 import br.com.webinside.runtime.function.sv.SVNode;
 import br.com.webinside.runtime.integration.IntFunction;
 import br.com.webinside.runtime.integration.WILocale;
+import br.com.webinside.runtime.util.Compat;
 import br.com.webinside.runtime.util.ErrorLog;
 import br.com.webinside.runtime.util.Function;
 import br.com.webinside.runtime.util.I18N;
@@ -50,9 +54,10 @@ import br.com.webinside.runtime.util.WIVersion;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.27 $
  */
 public class Context {
+	
     private ExecuteParams wiParams;
 
     /**
@@ -92,6 +97,10 @@ public class Context {
                 String loginPage = wiParams.getProject().getLoginPage();
                 if (!loginPage.trim().equals("")) {
                 	WIMap wiMap = wiParams.getWIMap();
+                	if (wiMap == null) {
+                		wiMap = new WIMap();
+                		wiParams.setParameter(ExecuteParamsEnum.WI_MAP, wiMap);
+                	}
                 	wiMap.remove("tmp.msgsecurevar");
                 	wiMap.put("tmp.msglogin", "Login Expirado");
                 	wiParams.sendRedirect(loginPage + ".wsp", wiMap, true);
@@ -113,24 +122,23 @@ public class Context {
         if (!wiParams.getWISession().isValid() || isWML) {
             wiParams.getWISession().makeSession();
         }
+        String projMapId = "wiruntime-" + wiParams.getProject().getId();
         WIMap wiMap = null;
         try {
-            String projMapId = "wiengine-" + wiParams.getProject().getId();
-            WIMap wiMapReal =
-                (WIMap) wiParams.getWISession().getAttribute(projMapId);
-            if (wiMapReal != null) {
-            	wiMap = wiMapReal.cloneMe();
+            WIMap sessionMap = (WIMap) wiParams.getWISession().getAttribute(projMapId);
+            if (sessionMap != null) {
+            	wiMap = sessionMap.cloneMe();
                 String redirId =
                     (String) wiParams.getHttpParameters().get("wi.redirect");
                 if (redirId != null && !redirId.equals("")) {
                 	String redirKey = "wi.redirect." + redirId + ".";
-                    WIMap sub = (WIMap) wiMapReal.getObj(redirKey);
+                    WIMap sub = (WIMap) sessionMap.getObj(redirKey);
                     if (sub != null) {
                     	wiMap.putAll(sub.getAsMap());
                     	wiMap.remove("redirectTime");
                     }
                 }
-                cleanRedirect(wiMapReal);
+                cleanRedirect(sessionMap);
                 wiMap.remove("wi.redirect.");
             }
         } catch (ClassCastException err) {
@@ -157,14 +165,20 @@ public class Context {
         populateWI(wiMap);
         wiMap.putObj("wi.functions", wiParams.getProject().getFunctionsMap());
         if (wiParams.getWISession().isNew()) {
+        	WIMap sessionMap = getSessionMap(projMapId);
+            IntFunction.loadInitParams(sessionMap, wiParams.getProject());
             IntFunction.loadInitParams(wiMap, wiParams.getProject());
         }
         wiMap.putObj("wi.servletcontext", wiParams.getServletContext());
         importHeaders(wiMap);
         if (impParams) {
+        	if (wiParams.getHttpParameters().containsKey("wi.slink")) {
+            	String slink = (String) wiParams.getHttpParameters().get("wi.slink");
+                SecureLinkManager.importToken(slink, wiMap);
+        	}
             importParameters(wiMap);
-        	HttpServletRequest req = wiParams.getHttpRequest();
     		// recuperar tmp's enviados ao include usando http request
+        	HttpServletRequest req = wiParams.getHttpRequest();
         	if (req != null && req.getAttribute("wiTmpMap") != null) {
         		WIMap reqMap = (WIMap) req.getAttribute("wiTmpMap");
         		Iterator it = reqMap.keySet().iterator();
@@ -211,11 +225,11 @@ public class Context {
         context.put("wi.session.ip", wiParams.getHttpRequest().getRemoteAddr());
         context.put("wi.session.host", wiParams.getHttpRequest().getRemoteHost());
         HttpServletRequest req = wiParams.getHttpRequest();
-        String servername = EngFunction.getServerName(req);
+        String servername = RtmFunction.getServerName(req);
         context.put("wi.server.host", servername);
-        int serverPort = EngFunction.getServerPort(req);
+        int serverPort = RtmFunction.getServerPort(req);
         context.put("wi.server.port", serverPort);
-        String serverProt = EngFunction.getServerProt(req, serverPort);
+        String serverProt = RtmFunction.getServerProt(req, serverPort);
         context.put("wi.server.prot", serverProt);
         String serverUrl = servername;
         if ((serverPort != 80) && (serverPort != 443)
@@ -223,6 +237,14 @@ public class Context {
             serverUrl = serverUrl + ":" + serverPort;
         }
         context.put("wi.server.url", serverProt + serverUrl);
+        String localhost = serverProt + "localhost" + ":" + req.getServerPort();
+        context.put("wi.server.localhost", localhost);
+        String shortname = "wiserver";
+        try {
+        	shortname = InetAddress.getLocalHost().getHostName();
+        	shortname = StringA.piece(shortname.toLowerCase(), ".", 1);
+        } catch (UnknownHostException e) { }	
+        context.put("wi.server.name", shortname);
         populateProjPath(context);        
         Long initialTime =
             (Long) wiParams.getHttpRequest().getAttribute("wiInitialTime");
@@ -300,15 +322,7 @@ public class Context {
         context.put("wi.date.sec", seg);
         context.put("wi.date.hm", hora + ":" + min);
         context.put("wi.date.hms", hora + ":" + min + ":" + seg);
-        String version = WIVersion.VERSION;
-        if (WIVersion.VERSION_DEBUG > 0) {
-        	version += ".d" + WIVersion.VERSION_DEBUG;
-        }
-        if (WIVersion.SERVICE_PACK > 0) {
-        	version += ".SP" + WIVersion.SERVICE_PACK;
-        }
-        context.put("wi.version", version);
-        context.put("wi.versiondebug", WIVersion.VERSION_DEBUG);
+        context.put("wi.version", WIVersion.VERSION);
         context.put("wi.novalidation", "true");
     }
 
@@ -316,27 +330,23 @@ public class Context {
         if (wiParams.getServletContext() != null) {
         	ServletContext sc = wiParams.getServletContext();
         	String prjId = context.get("wi.proj.id");
-            String cvs = wiParams.getWICVS();
-            String prjDir = sc.getRealPath(cvs);
+            String prjDir = sc.getRealPath("");
             String webappsDir = new File(sc.getRealPath("")).getParent();
             context.put("wi.proj.path", prjDir);
             context.put("wi.webapps.path", webappsDir);
-            context.put("wi.proj.id", prjId + cvs);
+            context.put("wi.proj.id", prjId);
         }
     }
 
     private WIMap getSessionMap(String projMapId) {
-        WIMap appMap = null;
-        synchronized (wiParams.getServletContext()) {
-            // contexto app			
-        	ServletContext sc = wiParams.getServletContext(); 
-            try {
-                appMap = (WIMap) sc.getAttribute("webinside");
-            } catch (ClassCastException err) { }
-            if (appMap == null) {
-                appMap = new WIMap();
-                sc.setAttribute("webinside", appMap);
-            }
+    	ServletContext sc = wiParams.getServletContext();
+    	WIMap appMap = null;
+    	try {
+            appMap = (WIMap) sc.getAttribute("webinside");
+        } catch (ClassCastException err) { }
+        if (appMap == null) {
+            appMap = new WIMap();
+            sc.setAttribute("webinside", appMap);
         }
         WIMap sessionMap = null;
         synchronized (wiParams.getWISession().getHttpSession()) {
@@ -381,7 +391,7 @@ public class Context {
     
     public void syncWIMap(WIMap wiMap) {
         if (!wiParams.getWISession().isValid()) return;
-        String projMapId = "wiengine-" + wiParams.getProject().getId();
+        String projMapId = "wiruntime-" + wiParams.getProject().getId();
         syncWIMap(wiMap, getSessionMap(projMapId));
         if (wiParams.getHttpRequest() != null) {
         	WIMap tmpMap = getTmpMap(wiMap);
@@ -396,7 +406,8 @@ public class Context {
      */
     public void putWIMap(WIMap wiMap) {
         if (!wiParams.getWISession().isValid()) return;
-        String projMapId = "wiengine-" + wiParams.getProject().getId();
+        String prjId = wiParams.getProject().getId();
+        String projMapId = "wiruntime-" + prjId;
         WIMap sessionMap = getSessionMap(projMapId);
         syncWIMap(wiMap, sessionMap);
         String md5 = wiMap.get("wi.pwd.md5");
@@ -415,17 +426,8 @@ public class Context {
         if (!redirID.equals("")) {
             WIMap subobj = new WIMap();
             subobj.put("redirectTime", new Date().getTime() + "");
-            if (wiParams.getProject().isRequestScope()) {
-                subobj = wiMap.cloneMe();
-                subobj.remove("app.");
-                subobj.remove("pvt.");
-                subobj.remove("wi.");
-                subobj.remove("grid.");
-                subobj.remove("combo.");
-            } else {
-                subobj.putObj("tmp.", wiMap.getObj("tmp."));
-                subobj.putObj("stmp.", wiMap.getObj("stmp."));
-            }
+            subobj.putObj("tmp.", wiMap.getObj("tmp."));
+            subobj.putObj("stmp.", wiMap.getObj("stmp."));
             subobj.put("wi.token.proj", wiMap.get("wi.proj.id"));
             subobj.put("wi.token.page", wiMap.get("wi.page.id"));
             transpose(wiMap, subobj, "wi.token.received");
@@ -448,6 +450,7 @@ public class Context {
         WIMap appMap = (WIMap)sessionMap.getObj("app.");
         wiParams.getServletContext().setAttribute("webinside", appMap);
         wiParams.getWISession().setAttribute(projMapId, sessionMap);
+        Compat.legacySession(wiParams.getWISession(), prjId, sessionMap);
     }
     
     private void transpose(WIMap source, WIMap target, String key) {
@@ -470,7 +473,6 @@ public class Context {
             if (ok) return true;
         }
         if (key.startsWith("super.")) return false;
-        if (wiParams.getProject().isRequestScope()) return false;
         String reserved = "wi.,tmp.,stmp.,tmp[,grid.,combo.";
         for (int a = 1; a <= (StringA.count(reserved, ',') + 1); a++) {
             if (key.startsWith(StringA.piece(reserved, ",", a))) {
@@ -501,16 +503,16 @@ public class Context {
             name = name.toLowerCase().trim();
             if (session.isValid() && IntFunction.isSecureVar(svSet, name)) {
             	SVNode svNode = IntFunction.getSVNode(session, name);
-            	String pValue = value;
+            	String pValue = value.trim();
             	value = svNode.getValue(pValue);
             	if (!pValue.equals("") && value.equals("")) {
                 	boolean first = wiMap.get("tmp.msgsecurevar").equals("");
                 	if (first) wiMap.put("tmp.msgsecurevar", name + "=" + pValue);
                 	ErrorLog log = wiParams.getErrorLog();
-                	Object iru = wiParams.getRequestAttribute(Execute.INCLUDE_REQUEST_URI);
+                	Object iru = wiParams.getRequestAttribute(ExecuteServlet.INCLUDE_REQUEST_URI);
                 	if (log != null && iru == null) {
-                		String msg = "Not found: " + name + "=" + pValue;
-                		log.write(getClass().getName(), "SecureVar", msg);
+//                		String msg = "Not found: " + name + "=" + pValue;
+//                		log.write(getClass().getName(), "SecureVar", msg);
                 	}
             	}
             }
@@ -569,6 +571,9 @@ public class Context {
             if (name.endsWith(".page.prev")) {
                 ok = true;
             }
+            if (name.endsWith(".developer")) {
+                ok = true;
+            }
             if (!ok) {
                 return;
             }
@@ -598,6 +603,13 @@ public class Context {
         }
         if (wiMap.get("pvt.sqlfilter." + name).equalsIgnoreCase("text")) {
         	value = StringA.changeChars(value, "%*?'\"", "");
+        }
+        if (wiParams.getProject().isTmpRequestVar()) {
+            boolean concat = true;
+            if (name.startsWith("wi.")) concat = false;
+            if (name.startsWith("tmp.")) concat = false;
+            if (name.startsWith("grid.")) concat = false;
+            if (concat) name = "tmp." + name;
         }
         // Um parametro recebido como vazio deve ser armazenado para o Persist
         // poder detectar as variaveis que foram enviadas.

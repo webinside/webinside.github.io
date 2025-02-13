@@ -21,15 +21,16 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.Cookie;
 
-import br.com.webinside.runtime.core.EngFunction;
+import br.com.webinside.runtime.core.RtmFunction;
 import br.com.webinside.runtime.exception.UserException;
 import br.com.webinside.runtime.integration.AbstractConnector;
 import br.com.webinside.runtime.integration.DatabaseAliases;
 import br.com.webinside.runtime.integration.IntFunction;
 import br.com.webinside.runtime.integration.InterfaceHeaders;
 import br.com.webinside.runtime.integration.JavaParameter;
+import br.com.webinside.runtime.util.CrossContext;
+import br.com.webinside.runtime.util.CrossContextFactory;
 import br.com.webinside.runtime.util.Function;
-import br.com.webinside.runtime.util.SingleSignOnRepository;
 import br.com.webinside.runtime.util.WIMap;
 
 public class SingleSignOnConnector extends AbstractConnector {
@@ -38,8 +39,8 @@ public class SingleSignOnConnector extends AbstractConnector {
 			InterfaceHeaders headers) throws UserException {
 		String projId =  wiMap.get("wi.proj.id");
         String wilogin = wiMap.get("pvt.wilogin");
-        String addr = getParams().getHttpRequest().getRemoteAddr();
-    	String ssoId = EngFunction.getSingleSignOnId(getParams());
+        String addr = getParams().getHttpRequest().getRequestedSessionId();
+    	String ssoId = RtmFunction.getSingleSignOnId(getParams());
         if (wilogin.equals(addr)) {
         	if (ssoId.equals("")) ssoId = Function.randomKey();
         	Cookie cookie = new Cookie("JSSOID", ssoId);
@@ -57,8 +58,14 @@ public class SingleSignOnConnector extends AbstractConnector {
             		aux.putObj(token, wiMap.getObj(token));
             	}	
             }
-        	String ssoKey = ssoId + "-" + addr;
-        	SingleSignOnRepository.addToken(ssoKey, aux.getAsMap(), projId);
+        	CrossContext cross = CrossContextFactory.getInstance();
+        	if (cross != null) {
+        		cross.createSSO(ssoId + "-" + addr, projId, aux.getAsMap());
+        	} else {
+        		String className = getClass().getName();
+        		String msg = "wi-crosscontext.jar not found in Tomcat lib";
+        		getParams().getErrorLog().write(className, "Execute", msg);
+        	}
         }
     }
     	

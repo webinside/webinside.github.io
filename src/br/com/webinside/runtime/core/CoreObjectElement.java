@@ -40,7 +40,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.9 $
  */
 public class CoreObjectElement extends CoreCommon {
     private ObjectElement object;
@@ -76,7 +76,7 @@ public class CoreObjectElement extends CoreCommon {
         String dbalias = object.getDatabase();
         DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
         if ((db == null) || (!db.isConnected())) {
-            EngFunction.databaseError(wiParams, dbalias);
+            RtmFunction.databaseError(wiParams, dbalias);
             return;
         }
         ProducerParam prod = new ProducerParam();
@@ -87,12 +87,13 @@ public class CoreObjectElement extends CoreCommon {
         if (!prefixPos.equals("")) {
             auxhash.put(subPrefix + "[" + prefixPos + "].index()", prefixPos);
         }
-        db.setCharFilter(EngFunction.cleanSpace(object.getSqlFilter()), "");
+        db.setCharFilter(RtmFunction.cleanSpace(object.getSqlFilter()), "");
         Exception exrs = null;
         long ini = new Date().getTime();
         ResultSet rs = null;
         try {
-            rs = db.execute(changePrefix(), auxhash);
+        	String query = changePrefix();
+            rs = db.execute(query, auxhash);
         } catch (Exception err) {
             exrs = err;
         }
@@ -109,7 +110,9 @@ public class CoreObjectElement extends CoreCommon {
                 }
                 cnames.append(names[i]);
             }
-        	wiMap.put(wiobj + ".columnNames()", cnames.toString());
+            if (!wiobj.equalsIgnoreCase("pvt")) {
+            	wiMap.put(wiobj + ".columnNames()", cnames.toString());
+            }	
             int colIds = Function.parseInt(object.getColumnIDs().trim());
             if (colIds < 0) colIds = 0;
             wiMap.remove(wiobj + ".size()"); 
@@ -126,13 +129,19 @@ public class CoreObjectElement extends CoreCommon {
             	Map jsonMap = new LinkedHashMap();
                 for (int i = 0; i < names.length; i++) {
                     String value = rs.column(i + 1);
-                    if (pos == 1) {
+                    // antigo: if (pos == 1)
+                    if (!object.isMultiple()) {
 	                    wiMap.put(wiobj + "." + names[i], value);
 	                    //deprecated = wiMap.put(wiobj + "." + (i + 1), value);
-                    }    
+                    }
+                    if (object.getProcjson().equals("decode")) {
+                    	String auxPrefJson = wiobj;
+                    	if (object.isMultiple()) auxPrefJson += "[" + pos + "]";  
+                    	Function.decodeJSON(wiMap, value, auxPrefJson);
+                    }
                     jsonMap.put(names[i], value);
                 }
-                if (object.isUsejson()) {
+                if (object.getProcjson().equals("encode")) {
             		wiMap.put(wiobj + ".json", JSONValue.toJSONString(jsonMap));
                 	jsonList.add(jsonMap);
                 }
@@ -155,17 +164,16 @@ public class CoreObjectElement extends CoreCommon {
                     }
                 }    
             }
-        	if (object.isUsejson()) {
+        	if (object.getProcjson().equals("encode")) {
         		if (object.isMultiple()) {
             		String jsonText = JSONValue.toJSONString(jsonList);
-            		jsonText = StringA.change(jsonText, "},", "},\r\n");
             		wiMap.put(wiobj + ".json", jsonText);
         		} else if (jsonList.size() == 0) {
         			wiMap.put(wiobj + ".json", "null");
         		}	
         	}
         } else {
-        	EngFunction.invalidateTransaction(wiMap, db.getErrorMessage());
+        	RtmFunction.invalidateTransaction(wiMap, db.getErrorMessage());
         	queryException(exrs, db, object.getDescription());
         }
         writeLog();

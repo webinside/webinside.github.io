@@ -34,7 +34,7 @@ import org.htmlparser.util.*;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class WIHighlighter extends AbstractConnector
     implements InterfaceParameters {
@@ -128,7 +128,9 @@ public class WIHighlighter extends AbstractConnector
         int vSize = v.size();
         String[] colors = new String[vSize];
         for (int i = 0; i < vSize; i++) {
-            colors[i] = COLORS[i % COLORS.length];
+        	String cor = getParams().getWIMap().get("tmp.search.color").trim();
+        	if (cor.equals("")) colors[i] = COLORS[i % COLORS.length];
+        	else colors[i] = cor;
         }
 
         //vetor com os termos compostos (frases) da query de pesquisa
@@ -346,16 +348,15 @@ public class WIHighlighter extends AbstractConnector
      * @return DOCUMENT ME!
      */
     public JavaParameter[] getInputParameters() {
-        JavaParameter[] jp = new JavaParameter[3];
-        jp[0] =
-            new JavaParameter(WIHighlighter.CONTENT_VAR,
+        JavaParameter[] jp = new JavaParameter[4];
+        jp[0] = new JavaParameter(WIHighlighter.CONTENT_VAR,
                 "Conteúdo a ser destacado");
-        jp[1] =
-            new JavaParameter(WIHighlighter.CSS_STYLE_VAR,
+        jp[1] = new JavaParameter(WIHighlighter.CSS_STYLE_VAR,
                 "Estilo CSS do destaque");
-        jp[2] =
-            new JavaParameter(WIHighlighter.SEARCH_QUERY_VAR,
+        jp[2] = new JavaParameter(WIHighlighter.SEARCH_QUERY_VAR,
                 "<em>Query</em> com os termos do destaque");
+        jp[3] = new JavaParameter("tmp.search.color",
+                "Cor do destaque");
         return jp;
     }
 

@@ -31,11 +31,11 @@ public class LineChart extends WICategoryChart {
     public void createChart() {
         if (draw3d) {
             chart = ChartFactory.createLineChart3D(title, xLabel, yLabel,
-                    getCategoryDataset(), getPlotOrientation(), true, true,
+                    getCategoryDataset(), getPlotOrientation(), hasLegend(), true,
                     false);
         } else {
             chart = ChartFactory.createLineChart(title, xLabel, yLabel,
-                    getCategoryDataset(), getPlotOrientation(), true, true,
+                    getCategoryDataset(), getPlotOrientation(), hasLegend(), true,
                     false);
         }
         defineCategoryFont(chart);

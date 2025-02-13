@@ -18,6 +18,7 @@
 package br.com.webinside.runtime.component;
 
 import java.util.*;
+
 import org.jdom.*;
 
 import br.com.webinside.runtime.xml.*;
@@ -26,7 +27,7 @@ import br.com.webinside.runtime.xml.*;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Hosts {
     private static Object sync = new Object();
@@ -173,6 +174,22 @@ public class Hosts {
         return ErrorCode.NOERROR;
     }
 
+    public boolean hasSMTP() {
+        List list = hosts.getChildren("HOST");
+        Iterator i = list.iterator();
+        while (i.hasNext()) {
+            try {
+            	Element host = (Element) i.next();
+                String prot = XMLFunction.getElemValue(host, "PROTOCOL");
+                if (prot.startsWith("SMTP")) return true;
+            } catch (ClassCastException err) {
+            	// Não deve ocorrer
+            	err.printStackTrace(System.err);
+            }
+        }
+        return false;
+    }
+    
     /**
      * DOCUMENT ME!
      *

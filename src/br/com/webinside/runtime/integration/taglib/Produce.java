@@ -60,22 +60,9 @@ public class Produce extends BodyTagSupport {
 					} else {
 						if (compact != null && 
 								compact.trim().equalsIgnoreCase("true")) {
-							StringBuilder nbody = new StringBuilder();
-							char last = ' ';
-							for (int i = 0; i < body.length(); i++) {
-								char c = body.charAt(i);
-								if (c == '\t') c = ' ';
-								if (c == '\r' || (c == ' ' && last == ' ')) {
-									continue;
-								}
-								if (c == '\n' && last != '>') {
-									if (last == '\n' || last == ' ') continue;
-									c = ' ';
-								}
-								nbody.append(c);
-								last = c;
-							}
-							body = nbody.toString();
+							body = body.replace("\r", "");
+							body = body.replace('\t', ' ');
+							body = body.trim().replaceAll(" +", " ");
 						}
 					    ProducerParam param = new ProducerParam();
 					    param.setWIMap(wiParams.getWIMap());

@@ -26,10 +26,10 @@ import br.com.webinside.runtime.util.*;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.3 $
  */
 public class ClientFtp {
-    private static int bsize = 2048;
+    private static int BUFFER_SIZE = 8 * 1024;
     /** DOCUMENT ME! */
     private static final int CONNECTED = 1;
     /** DOCUMENT ME! */
@@ -126,9 +126,9 @@ public class ClientFtp {
             ftp.cd(StringA.change(path, "\\", "/"));
             TelnetInputStream arqin = ftp.list(passive);
             int tam = 0;
-            byte[] bt = new byte[bsize];
+            byte[] bt = new byte[BUFFER_SIZE];
             StringA linha = new StringA();
-            while ((tam = arqin.read(bt, 0, bsize)) > 0) {
+            while ((tam = arqin.read(bt, 0, BUFFER_SIZE)) > 0) {
                 linha.append(asLine(bt, tam));
                 int pos = 0;
                 int fim = linha.length() - 1;
@@ -610,8 +610,8 @@ public class ClientFtp {
             TelnetInputStream arqin = ftp.get(source, passive);
             FileOutputStream file = new FileOutputStream(targetpath + target);
             int tam = 0;
-            byte[] bt = new byte[bsize];
-            while ((tam = arqin.read(bt, 0, bsize)) > 0) {
+            byte[] bt = new byte[BUFFER_SIZE];
+            while ((tam = arqin.read(bt, 0, BUFFER_SIZE)) > 0) {
                 file.write(bt, 0, tam);
             }
             file.close();
@@ -722,10 +722,10 @@ public class ClientFtp {
             int size = file.available();
             int total = 0;
             while (total < size) {
-                byte[] bt = new byte[bsize];
+                byte[] bt = new byte[BUFFER_SIZE];
                 int tam = size - total;
-                if (tam > bsize) {
-                    tam = bsize;
+                if (tam > BUFFER_SIZE) {
+                    tam = BUFFER_SIZE;
                 }
                 file.read(bt, 0, tam);
                 total = total + tam;
@@ -843,6 +843,7 @@ public class ClientFtp {
                 ftp.closeServer();
             }
         } catch (IOException err) {
+        	// ignorado
         }
         status = UNKNOWN;
     }

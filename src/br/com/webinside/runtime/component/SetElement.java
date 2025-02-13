@@ -25,7 +25,7 @@ import br.com.webinside.runtime.xml.*;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SetElement extends AbstractActionElement {
 
@@ -292,6 +292,26 @@ public class SetElement extends AbstractActionElement {
      */
     public boolean isDisableProduce() {
         return XMLFunction.getElemValue(set, "DISABLEPRODUCE").equals("ON");
+    }
+
+    
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public void setDecodeJson(boolean value) {
+        XMLFunction.setElemValue(set, "DECODEJSON", value ? "ON"
+                                                        : "");
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public boolean isDecodeJson() {
+        return XMLFunction.getElemValue(set, "DECODEJSON").equals("ON");
     }
 
 }

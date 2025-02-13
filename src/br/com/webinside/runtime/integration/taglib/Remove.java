@@ -26,7 +26,7 @@ import br.com.webinside.runtime.core.ExecuteParams;
  * Classe que remove uma variável do wi.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Remove extends TagSupport {
 
@@ -50,7 +50,7 @@ public class Remove extends TagSupport {
                     wiParams.getWIMap().remove(var);
                 }
                 if (var.equals("wi.session.id")) {
-               		wiParams.getWISession().invalidate();
+                	wiParams.getWIMap().put("wi.session.id", "invalidate");;
                 }
             } catch (Exception err) {
                 wiParams.getErrorLog().write("Remove", "taglib", err);

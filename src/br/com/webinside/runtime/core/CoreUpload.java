@@ -24,9 +24,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.Base64;
 import java.util.zip.DeflaterOutputStream;
 
-import sun.misc.BASE64Encoder;
 import br.com.webinside.runtime.component.AbstractUpload;
 import br.com.webinside.runtime.component.Host;
 import br.com.webinside.runtime.component.UploadDatabase;
@@ -43,7 +43,7 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.5 $
  */
 public class CoreUpload extends CoreCommon {
     private UploadRef upref;
@@ -160,7 +160,7 @@ public class CoreUpload extends CoreCommon {
                 ftp = new ClientFtp(host.getAddress(), host.getUser(),
                         host.getPass());
                 if (!ftp.isConnected()) {
-                    EngFunction.hostError(wiParams, upl.getHostId());
+                    RtmFunction.hostError(wiParams, upl.getHostId());
                     return;
                 }
             }
@@ -219,7 +219,7 @@ public class CoreUpload extends CoreCommon {
         String dbalias = upl.getDatabase();
         DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
         if ((db == null) || (!db.isConnected())) {
-            EngFunction.databaseError(wiParams, dbalias);
+            RtmFunction.databaseError(wiParams, dbalias);
             return;
         }
         if (!wiParams.getFileUpload().hasFile(field)) {
@@ -230,7 +230,7 @@ public class CoreUpload extends CoreCommon {
         String mytemp = Function.rndTmpFile("upl", "tmp");
         wiParams.getFileUpload().saveFile(field, mytemp);
 		wiMap.remove("wi.transaction.none");
-        db.setCharFilter(EngFunction.cleanSpace(upl.getSqlFilter()), "");
+        db.setCharFilter(RtmFunction.cleanSpace(upl.getSqlFilter()), "");
         int result = -1;
         try {
         	InputStream myin = new FileInputStream(mytemp);
@@ -238,14 +238,9 @@ public class CoreUpload extends CoreCommon {
     	        String mytemp2 = Function.rndTmpFile("upl", "tmp");
     			DeflaterOutputStream zip = 
     				new DeflaterOutputStream(new FileOutputStream(mytemp2));
-                byte[] trecho = new byte[10240];
-                int quant = 0;
-                while ((quant = myin.read(trecho)) > -1) {
-                    zip.write(trecho, 0, quant);
-                    zip.flush();
-                }
-                zip.close();
-                myin.close();
+    			Function.copyStream(myin, zip);
+    			Function.closeStream(zip);
+                Function.closeStream(myin);
             	new File(mytemp).delete();
             	mytemp = mytemp2;
     			myin = new FileInputStream(mytemp);
@@ -253,7 +248,7 @@ public class CoreUpload extends CoreCommon {
             if (upl.isBase64()) {
     	        String mytemp2 = Function.rndTmpFile("upl", "tmp");
                 FileOutputStream out = new FileOutputStream(mytemp2);
-                new BASE64Encoder().encode(myin, out);
+                Function.copyStream(myin, Base64.getEncoder().wrap(out));
                 out.close();
                 myin.close();
             	new File(mytemp).delete();
@@ -263,7 +258,7 @@ public class CoreUpload extends CoreCommon {
             try {
             	result = db.executeUpdate(myin, upl.getSql(), wiMap);
             } catch (Exception err) {
-                result = EngFunction.errorCodeSQL(err);
+                result = RtmFunction.errorCodeSQL(err);
             }
             if (myin != null) {
     	        myin.close();
@@ -276,7 +271,7 @@ public class CoreUpload extends CoreCommon {
         }
         if (result < 0) {
             wiMap.put("wi.upl.ok", "false");
-        	EngFunction.invalidateTransaction(wiMap, db.getErrorMessage());
+        	RtmFunction.invalidateTransaction(wiMap, db.getErrorMessage());
             Exception ex = new SQLException(db.getErrorMessage());
         	queryException(ex, db, upl.getDescription());
             db.updateLog(wiMap, false);

@@ -20,17 +20,20 @@ package br.com.webinside.runtime.util;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Classe que possui internamente um objeto StringBuffer  e possui operações
  * adicionais para manipulação de texto
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.7 $
  *
  * @since 3.0
  */
@@ -489,6 +492,7 @@ public class StringA {
         if (!sensitive) {
             auxtext = text.toUpperCase();
             oldChars = oldChars.toUpperCase();
+            newChars = newChars.toUpperCase();
         } else {
             auxtext = text;
         }
@@ -504,8 +508,13 @@ public class StringA {
             int pos = oldChars.indexOf(letu);
             if (pos == -1) {
                 aux.append(letn);
-            } else if (newChars.length() > pos) {
-                aux.append(newChars.charAt(pos));
+            } else {
+            	if (newChars.equalsIgnoreCase("ALL_TO_SPACE")) {
+            		aux.append(" ");
+            	} else if (newChars.length() > pos) {
+            		aux.append(newChars.charAt(pos));
+            	} 	
+            	
             }
         }
         return aux.toString();
@@ -1018,6 +1027,16 @@ public class StringA {
     public static String getUsAscii(String text) {
         return StringA.changeChars(text, FOREIGN_CHARS, US_CHARS);
     }
+
+    public static String getForFile(String text) {
+    	String resp = StringA.changeChars(text, "\r\n\\/:*?\"'<>|ºª°@#$%&._", "ALL_TO_SPACE");
+    	resp = resp.replaceAll("-+", "-"); // repeticao de -
+    	resp = resp.replaceAll("^-", " "); // inicia com -
+    	resp = resp.replaceAll("-$", " "); // termina com  -
+    	resp = StringA.getUsAscii(resp.replaceAll("\\s+", " ").trim());
+    	resp = StringA.changeChars(resp, " ", "_");
+    	return resp.replace("_-_", "-");
+    }
     
     public static String changeForHtmlTag(String text) {
         if ((text == null) || text.equals("")) {
@@ -1071,6 +1090,23 @@ public class StringA {
             aux.insert(0, complemento);
         }
         return aux.toString();
+    }
+    
+    public static int compareLevRatio(String s1, String s2) {
+    	s1 = s1.toLowerCase().replaceAll("\\s+"," ").trim();
+		s1 = Normalizer.normalize(s1, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
+		s2 = s2.toLowerCase().replaceAll("\\s+"," ").trim();
+		s2 = Normalizer.normalize(s2, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
+		int lev = StringUtils.getLevenshteinDistance(s1, s2);
+		int minLen = s1.length() < s2.length() ? s1.length() : s2.length();
+		if (minLen == 0) return 100;
+		if (s1.replace(" ", "").length() < 5 || s2.replace(" ", "").length() < 5) return 99;
+		int diff = Math.abs(s1.length() - s2.length());
+		return (lev-diff) * 100 / minLen;
+    }
+    
+    public static void main(String[] args) {
+    	System.out.println("{" + getForFile("---CONDOMINIO PENDÊNCIAS_-_2021-") + "}");
     }
     
 }

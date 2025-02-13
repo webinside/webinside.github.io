@@ -162,10 +162,10 @@ public class CoreWIObjectGrid extends CoreCommon {
             }
             wiParams.includeCode("/grids/" + objgrid.getGridId() + "/grid.jsp");
             WIMap origMap = wiParams.getWIMap();
-            wiParams.setParameter(ExecuteParams.WI_MAP, aux);
+            wiParams.setParameter(ExecuteParamsEnum.WI_MAP, aux);
             CoreWIObjectGrid core = new CoreWIObjectGrid(wiParams, objgrid);
             core.execute();
-            wiParams.setParameter(ExecuteParams.WI_MAP, origMap);
+            wiParams.setParameter(ExecuteParamsEnum.WI_MAP, origMap);
             from = end + 1;
         }
     }

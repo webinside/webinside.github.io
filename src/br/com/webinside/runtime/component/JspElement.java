@@ -31,7 +31,7 @@ import br.com.webinside.runtime.xml.XMLFunction;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class JspElement extends AbstractActionElement {
 
@@ -239,14 +239,17 @@ public class JspElement extends AbstractActionElement {
      */
     public String toJSP() {
         StringBuffer resp = new StringBuffer();
-        String exp = CompFunction.filterTagAttribute(getCondition());
-        if (exp.equalsIgnoreCase("false")) {
-            return "";
+        String exp = CompFunction.filterTagAttribute(getCondition()).trim();
+        if (exp.equalsIgnoreCase("false")) return "";
+        if (!exp.equalsIgnoreCase("true") || useValidation) {
+            resp.append("<wi:if test=\"").append(exp).append("\" validation=\"true\">");
         }
         String code = getCode().trim();
         code = new JspPipeConverter().execute(code).trim();
-        resp.append("<wi:if test=\"").append(exp).append("\" validation=\"true\">");
-        resp.append(code).append("</wi:if>");
+        resp.append(code);
+        if (!exp.equals("true")) {
+        	resp.append("</wi:if>");
+        }
         return resp.toString();
     }
 }

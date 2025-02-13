@@ -28,7 +28,7 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CoreSocketElement extends CoreCommon {
     private SocketElement socket;
@@ -94,7 +94,7 @@ public class CoreSocketElement extends CoreCommon {
             }
         }
         if (realsocket == null) {
-            EngFunction.hostError(wiParams, socket.getHostId());
+            RtmFunction.hostError(wiParams, socket.getHostId());
             return;
         }
         String sendobj = StringA.changeChars(socket.getSendObj(), "| ", "");

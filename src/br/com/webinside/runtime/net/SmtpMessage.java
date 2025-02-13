@@ -46,7 +46,6 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import br.com.webinside.runtime.net.ssl.SSLSocketFactory;
 import br.com.webinside.runtime.util.Function;
 import br.com.webinside.runtime.util.StringA;
 
@@ -170,6 +169,7 @@ public class SmtpMessage implements Serializable {
 				Function.removeDir(folder);
 	    	} else {
 				try {
+			    	SmtpMessageThread.verifyFolder = true;
 					new File(folder).mkdirs();
 					String file = folder + "/message.obj";
 			    	FileOutputStream out = new FileOutputStream(file);
@@ -188,17 +188,14 @@ public class SmtpMessage implements Serializable {
 	private void sendMessage() throws MessagingException {
         Properties props = new Properties();
         props.put("mail.smtp.host", host);
+        if (port.equals("")) port = (secure ? "465" : "587");
+        props.put("mail.smtp.port", port);        
         props.put("mail.smtp.sendpartial", "true"); 
-        if (!port.equals("")) {
-            props.put("mail.smtp.port", port);        
-        }
+        props.put("mail.smtp.starttls.enable","true");
         if (secure) {
-        	String SSL_FACTORY = SSLSocketFactory.class.getName();
-        	props.put("mail.smtp.starttls.enable","true");
-        	if (port.equals("")) port = "465";
-            props.put("mail.smtp.port", port);        
+            props.put("mail.smtp.ssl.enable", "true");
         	props.put("mail.smtp.socketFactory.port", port); 
-        	props.put("mail.smtp.socketFactory.class", SSL_FACTORY); 
+        	props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory"); 
         	props.put("mail.smtp.socketFactory.fallback", "false");  
         }
         Authenticator auth = null;
@@ -254,7 +251,7 @@ public class SmtpMessage implements Serializable {
         	Transport.send(message);
         } catch (MessagingException ex) {
         	throw ex;
-        } finally {
+        } finally { 
             if (!debugDir.equals("")) {
             	session.getDebugOut().close();
             }	

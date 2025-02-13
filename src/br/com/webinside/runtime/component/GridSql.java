@@ -25,7 +25,7 @@ import br.com.webinside.runtime.xml.*;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class GridSql extends AbstractGridLinear {
 
@@ -146,6 +146,42 @@ public class GridSql extends AbstractGridLinear {
         return XMLFunction.getElemValue(grid, "SQLFILTER");
     }
 
+	/**
+     * DOCUMENT ME!
+     *
+     * @param value DOCUMENT ME!
+     */
+    public void setExportIn(String value) {
+        XMLFunction.setElemValue(grid, "EXPORTIN", value);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public String getExportIn() {
+        return XMLFunction.getElemValue(grid, "EXPORTIN");
+    }
+
+	/**
+     * DOCUMENT ME!
+     *
+     * @param value DOCUMENT ME!
+     */
+    public void setExportOut(String value) {
+        XMLFunction.setElemValue(grid, "EXPORTOUT", value);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public String getExportOut() {
+        return XMLFunction.getElemValue(grid, "EXPORTOUT");
+    }
+    
     /**
      * DOCUMENT ME!
      *

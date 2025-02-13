@@ -23,12 +23,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import br.com.webinside.runtime.util.FileIO;
+import br.com.webinside.runtime.util.Function;
 
 /**
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.3 $
  */
 public class ClientSocket {
     private Socket socket;
@@ -143,30 +144,12 @@ public class ClientSocket {
      * DOCUMENT ME!
      */
     public void close() {
-        try {
-	    	if (out != null) {
-	            out.close();
-	    	}
-        } catch (Exception err) {
-        	// ignorado
-        }
-        out = null;
-        try {
-        	if (in != null) {
-        		in.close();
-        	}
-        } catch (Exception err) {
-        	// ignorado
-        }
-        in = null;
-        try {
-        	if (socket != null) {
-        		socket.close();
-        	}
-        } catch (Exception err) {
-        	// ignorado
-        }
-        socket = null;
+    	Function.closeStream(in);
+    	in = null;
+    	Function.closeStream(out);
+    	out = null;
+    	Function.closeStream(socket);
+    	socket = null;
     }
 
     public Map getProperties() {

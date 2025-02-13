@@ -29,9 +29,10 @@ import org.jdom.*;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.4 $
  */
 public class MimeType {
+	
     private static Map mimetypes;
 
     /**
@@ -88,19 +89,11 @@ public class MimeType {
      * @param cLoader DOCUMENT ME!
      */
     public synchronized static void readFile(ClassLoader cLoader) {
-        if (mimetypes != null) {
-            return;
-        }
+        if (mimetypes != null) return;
         Document doc = null;
-        try {
-            InputStream in =
-                cLoader.getResourceAsStream("br/com/webinside/runtime/mimes.xml");
-            doc = (new Inputter()).input(in);
-            if (in != null) {
-                in.close();
-            }
-        } catch (IOException err) {
-        }
+        InputStream in = cLoader.getResourceAsStream("br/com/webinside/runtime/mimes.xml");
+        doc = (new Inputter()).input(in);
+        Function.closeStream(in);
         if (doc == null) {
             return;
         }

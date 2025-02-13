@@ -20,6 +20,7 @@ package br.com.webinside.runtime.integration;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Map;
 
 import br.com.webinside.runtime.util.AbstractLog;
 import br.com.webinside.runtime.util.StringA;
@@ -28,7 +29,7 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.4 $
  */
 public class LogsGenerator extends AbstractLog {
 
@@ -67,36 +68,28 @@ public class LogsGenerator extends AbstractLog {
 		}
 		return logsGenerator;
 	}
-	
-	public void write(String txtPage, String txtUser, String txtIP, 
-			String text, String detail) {
+
+	public void write(Map<String, String> atributes, String content) {
         if (getOut() != null) {
 	        synchronized (AbstractLog.logPool) {
 	            try {
 	                StringBuffer msg = new StringBuffer();
 	                msg.append("<LOG ").append(logDate());
-	                if (txtPage != null && !txtPage.trim().equals("")) {
-	                    msg.append(" PAGE=\"").append(StringA.getXml(txtPage));
-	                    msg.append("\"");
+	                for (Map.Entry<String, String> entry : atributes.entrySet()) {
+	                	String key = entry.getKey().toUpperCase().trim();
+	                	String value = entry.getValue();
+		                if (value != null && !value.trim().equals("")) {
+		                	String xmlValue = StringA.getXml(value.trim());
+		                    msg.append(" " + key + "=\"").append(xmlValue).append("\"");
+		                }
+					}
+	                if (content != null && !content.trim().equals("")) {
+		                msg.append(">\r\n");
+	                    msg.append("  " + content.trim() + "\r\n");
+		                msg.append("</LOG>\r\n");
+	                } else {
+		                msg.append("\\>\r\n");
 	                }
-	                if (txtUser != null && !txtUser.trim().equals("")) {
-	                    msg.append(" USER=\"").append(StringA.getXml(txtUser));
-	                    msg.append("\"");
-	                }
-	                if (txtIP != null && !txtIP.trim().equals("")) {
-	                    msg.append(" IP=\"").append(StringA.getXml(txtIP));
-	                    msg.append("\"");
-	                }
-	                msg.append(">\r\n");
-	                if (text != null && !text.equals("")) {
-	                    msg.append("<TEXT><![CDATA[");
-	                    msg.append(text).append("]]></TEXT>\r\n");
-	                }
-	                if (detail != null && !detail.equals("")) {
-	                    msg.append("<DETAIL><![CDATA[");
-	                    msg.append(detail).append("]]></DETAIL>\r\n");
-	                }
-	                msg.append("</LOG>\r\n");
 	                getOut().write(msg.toString());
 	                getOut().flush();
 	            } catch (FileNotFoundException err) {
@@ -108,5 +101,16 @@ public class LogsGenerator extends AbstractLog {
 	        }
         }
     }
-  
+	
+	public void write(Map<String, String> atributes, String text, String detail) {
+        StringBuffer content = new StringBuffer();
+        if (text != null && !text.equals("")) {
+        	content.append("<TEXT><![CDATA[").append(text).append("]]></TEXT>\r\n");
+        }
+        if (detail != null && !detail.equals("")) {
+        	content.append("<DETAIL><![CDATA[").append(detail).append("]]></DETAIL>\r\n");
+        }
+        write(atributes, content.toString());
+    }
+	
 }

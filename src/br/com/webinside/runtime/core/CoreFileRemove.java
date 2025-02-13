@@ -27,7 +27,7 @@ import br.com.webinside.runtime.util.*;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.3 $
  */
 public class CoreFileRemove extends CoreCommon {
     private AbstractFileRemove remove;
@@ -68,8 +68,9 @@ public class CoreFileRemove extends CoreCommon {
         wiParams.getProducer().execute();
         String directory = prod.getOutput();
         File dir = new File(directory);
-        if ((!dir.exists()) || (!dir.isDirectory())) {
-            String msg = "Directory not found (" + dir + ")";
+        if (!dir.exists()) return;
+        if (!dir.isDirectory()) {
+            String msg = "Its not directory (" + dir + ")";
             String jspFile = wiMap.get("wi.jsp.filename");
             wiParams.getErrorLog().write(jspFile, remove.getDescription(), msg);
             if (!wiParams.getPage().getErrorPageName().equals("")) {
@@ -113,7 +114,7 @@ public class CoreFileRemove extends CoreCommon {
                     ftp = null;
                 }
             } else {
-                EngFunction.hostError(wiParams, remftp.getHostId());
+                RtmFunction.hostError(wiParams, remftp.getHostId());
                 return;
             }
         }

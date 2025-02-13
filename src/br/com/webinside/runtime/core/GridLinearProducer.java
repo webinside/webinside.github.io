@@ -39,7 +39,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.10 $
  */
 public class GridLinearProducer {
     /** DOCUMENT ME! */
@@ -100,7 +100,7 @@ public class GridLinearProducer {
         if (pageWIMap.get("rowid").equals("")) {
         	wiMap = pageWIMap.cloneMe();
             wiMap.putObj("super.", pageWIMap);
-            wiParams.setParameter(ExecuteParams.WI_MAP, wiMap);
+            wiParams.setParameter(ExecuteParamsEnum.WI_MAP, wiMap);
             // verificar
         }
         wiMap.remove("wi.numberlist");
@@ -233,7 +233,7 @@ public class GridLinearProducer {
             return;
         }
         out.print(endValue);
-        wiParams.setParameter(ExecuteParams.WI_MAP, pageWIMap);
+        wiParams.setParameter(ExecuteParamsEnum.WI_MAP, pageWIMap);
         if (!directOut) {
         	pageWIMap.put(grdIdFull, sw.toString());
             if (!subId.equals("") && (grdId.indexOf("?") == -1)) {
@@ -251,7 +251,7 @@ public class GridLinearProducer {
         WIMap orig = wiParams.getWIMap();
         auxMap.put("wi.jsp.filename_parent", orig.get("wi.jsp.filename"));
         auxMap.put("wi.jsp.filename", name + "_pre");
-        wiParams.setParameter(ExecuteParams.WI_MAP, auxMap);
+        wiParams.setParameter(ExecuteParamsEnum.WI_MAP, auxMap);
         HttpServletRequest request = wiParams.getHttpRequest();
         String wiPage = (String)request.getAttribute("wiPage");        
        	request.setAttribute("wiPage", null);
@@ -262,7 +262,7 @@ public class GridLinearProducer {
         if (remove) {
         	wiParams.removeRequestAttribute("wiGrid");
         }	
-        wiParams.setParameter(ExecuteParams.WI_MAP, orig);
+        wiParams.setParameter(ExecuteParamsEnum.WI_MAP, orig);
         if (request.getAttribute("wiExit") != null) {
             exit = true;
         }
@@ -272,7 +272,7 @@ public class GridLinearProducer {
     private String getJspContent(WIMap auxMap, String type, boolean directOut) {
     	PrintWriter origWriter = wiParams.getWriter();
     	StringWriter str = new StringWriter();
-    	wiParams.setParameter(ExecuteParams.OUT_WRITER, new PrintWriter(str));
+    	wiParams.setParameter(ExecuteParamsEnum.OUT_WRITER, new PrintWriter(str));
         WIMap origMap = wiParams.getWIMap();
         // definindo estados especiais para as variaveis
     	auxMap.put("grid.generateInPage", "false");
@@ -282,20 +282,18 @@ public class GridLinearProducer {
         if (auxMap != wiParams.getWIMap()) {
         	auxMap.putObj("super.", wiParams.getWIMap());
         }	
-        wiParams.setParameter(ExecuteParams.WI_MAP, auxMap);
+        wiParams.setParameter(ExecuteParamsEnum.WI_MAP, auxMap);
     	boolean remove = (wiParams.getRequestAttribute("wiGrid") == null);
     	wiParams.setRequestAttribute("wiGrid", "true");
     	// executando a parte do grid
     	if ((grid instanceof GridSql) && ((GridSql)grid).isRecursive()) {
     		auxMap.remove("grid." + grid.getId());
     	}
-    	String file = 
-    		wiParams.getWICVS() + "/grids/" + grid.getId() + "/" + type + ".jsp";
+    	String file = "/grids/" + grid.getId() + "/" + type + ".jsp";
         try {
         	File f = new File(wiParams.getServletContext().getRealPath(file));
-        	if (f.exists() || Execute.jspList.contains(file)) { 
-        		RequestDispatcher rd = 
-        			wiParams.getServletContext().getRequestDispatcher(file);
+        	if (f.exists() || ExecuteServlet.jspList.contains(file)) { 
+        		RequestDispatcher rd = wiParams.getServletContext().getRequestDispatcher(file);
         		rd.include(wiParams.getHttpRequest(), wiParams.getHttpResponse());
         	}	
         } catch (Exception err) {
@@ -305,10 +303,10 @@ public class GridLinearProducer {
         if (remove) {
         	wiParams.removeRequestAttribute("wiGrid");
         }	
-        wiParams.setParameter(ExecuteParams.OUT_WRITER, origWriter);
+        wiParams.setParameter(ExecuteParamsEnum.OUT_WRITER, origWriter);
         auxMap.remove("grid.generateInPage");
         auxMap.remove("super.");
-        wiParams.setParameter(ExecuteParams.WI_MAP, origMap);
+        wiParams.setParameter(ExecuteParamsEnum.WI_MAP, origMap);
         if (!directOut) {
         	origMap.put("grid." + grid.getId(), 
         		auxMap.get("grid." + grid.getId()));
@@ -323,16 +321,14 @@ public class GridLinearProducer {
     	if (gdref != null && sw.getBuffer().length() > 0) {
 	    	int cl = 5000000;
 	    	String id = gdref.getId();
-	    	String text = wiMap.get("grid." + id + ".contentlimit");
+	    	String text = wiMap.get("grid." + id + ".contentlimit").trim();
 	    	if (!text.trim().equals("") && Function.parseInt(text) > 0) {
 	    		cl = Function.parseInt(text) * 1000000;
 	    	}
-	    	if (sw.getBuffer().length() > cl) {
-		        String label = 
-		        	new I18N().get("Conteúdo do Grid excedeu limite");
+	    	if (sw.getBuffer().length() > cl && !text.equalsIgnoreCase("nolimit")) {
+		        String label = new I18N().get("Conteúdo do Grid excedeu limite");
 		        String msg = "Grid " + id + " content limit exceded\r\n";
-            	wiParams.getErrorLog().write("GridLinearProducer", "Execute", 
-    				msg + wiMap);
+            	wiParams.getErrorLog().write("GridLinearProducer", "Execute", msg + wiMap);
 	    		sw.getBuffer().insert(0, "<font color='red'>" + label + "</font>");
 	    		return false;
 	    	}

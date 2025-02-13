@@ -44,7 +44,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.5 $
  */
 public class DatabaseDrivers {
     private static Context jndiContext;
@@ -101,7 +101,11 @@ public class DatabaseDrivers {
             		" - Connecting to DATASOURCE " + db_alias + 
             		" - " + antname.trim());
             DataSource ds = (DataSource) jndiContext.lookup(db_alias);
-            conexao = ds.getConnection();
+            if (!db_user.trim().equals("")) {
+                conexao = ds.getConnection(db_user, db_pass);
+            } else {
+                conexao = ds.getConnection();
+            }
             conexao.setAutoCommit(true);
         } catch (NamingException err) {
             ErrorLog log = parent.getErrorLog();
@@ -204,7 +208,7 @@ public class DatabaseDrivers {
         }
         try {
 			if (!alias.getClassType().equals("")) {
-				Driver drv = (Driver) Class.forName(alias.getClassName()).newInstance();
+				Driver drv = (Driver) Class.forName(alias.getClassName()).getConstructor().newInstance();
 				if (alias.getClassType().equals("REGISTERDRIVER")) {
 					DriverManager.registerDriver(drv);
 				}
@@ -243,7 +247,7 @@ public class DatabaseDrivers {
         Driver drv = null;
         try {
 			if (!alias.getClassType().equals("")) {
-				drv = (Driver) Class.forName(alias.getClassName()).newInstance();
+				drv = (Driver) Class.forName(alias.getClassName()).getConstructor().newInstance();
 				if (alias.getClassType().equals("REGISTERDRIVER")) {
 					DriverManager.registerDriver(drv);
 				}

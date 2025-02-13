@@ -21,6 +21,7 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
 import br.com.webinside.runtime.core.ExecuteParams;
+import br.com.webinside.runtime.core.ExecuteParamsEnum;
 
 /**
  * Classe que implementa um TagLib para finalizar uma página.
@@ -46,7 +47,7 @@ public class EndPage extends TagSupport {
             if (wiParams.getRequestAttribute("wiGrid") == null) {
 	            try {
 	            	if (wiParams.getRequestAttribute("wiWebService") == null) {
-			            wiParams.setParameter(ExecuteParams.OUT_WRITER, null);
+			            wiParams.setParameter(ExecuteParamsEnum.OUT_WRITER, null);
 	            	}	
 	            } catch (Exception err) {
 	            	err.printStackTrace(System.out);

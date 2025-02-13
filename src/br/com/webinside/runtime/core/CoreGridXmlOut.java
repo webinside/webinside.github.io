@@ -35,7 +35,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.3 $
  */
 public class CoreGridXmlOut {
     /** DOCUMENT ME! */
@@ -122,10 +122,10 @@ public class CoreGridXmlOut {
             String dbalias = xml.getDatabase().trim();
             DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
             if ((db == null) || (!db.isConnected())) {
-                EngFunction.databaseError(wiParams, dbalias);
+                RtmFunction.databaseError(wiParams, dbalias);
                 return;
             }
-            db.setCharFilter(EngFunction.cleanSpace(xml.getSqlFilter()), "");
+            db.setCharFilter(RtmFunction.cleanSpace(xml.getSqlFilter()), "");
             Exception exrs = null;
             ResultSet rs = null;
             try {
@@ -229,8 +229,7 @@ public class CoreGridXmlOut {
                 resp.append(space(xmlref) + line);
             }
             in.close();
-        } catch (IOException err) {
-        }
+        } catch (IOException err) { }
         if ((!resp.toString().endsWith("\n")) && (resp.length() > 0)) {
             resp.append("\r\n");
         }
@@ -274,9 +273,9 @@ public class CoreGridXmlOut {
                 values.put("grid." + xml.getId().trim() + ".recursivecontrol",
                     "true");
                 WIMap origMap = wiParams.getWIMap();
-                wiParams.setParameter(ExecuteParams.WI_MAP, values);
+                wiParams.setParameter(ExecuteParamsEnum.WI_MAP, values);
                 new CoreGridXmlOut(wiParams, (GridXmlOut) newgrid).execute(false);
-                wiParams.setParameter(ExecuteParams.WI_MAP, origMap);
+                wiParams.setParameter(ExecuteParamsEnum.WI_MAP, origMap);
                 values.remove("grid." + xml.getId().trim() + ".recursivecontrol");
             }
             from = last + 1;

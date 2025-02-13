@@ -72,6 +72,10 @@ public class NodeTable {
 		return primaryKeys;
 	}
 
+	public String getPrimaryKey() {
+		return primaryKeys.keySet().iterator().next().toString();
+	}
+	
 	public void setPrimaryKeys(Map primaryKeys) {
 		this.primaryKeys = primaryKeys;
 	}

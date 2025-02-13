@@ -23,7 +23,7 @@ import br.com.webinside.runtime.util.*;
  * Transforma pipes e funções em código JSP.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class JspPipeConverter {
     /** Identificador especial para desativar a troca dos pipes */
@@ -56,10 +56,10 @@ public class JspPipeConverter {
             int end = pos - 1;
             boolean isCombo = false;
 
-            // Testa se é uma |combo.| dentro de um <option>. 
+            // Testa se é uma |combo.XXX| dentro de um <option>. 
             if (StringA.mid(text, pos, pos + 6).equals("|combo.")) {
                 int pre = text.lastIndexOf("<", pos);
-                if (text.substring(pre).toUpperCase().startsWith("<OPTION")) {
+                if (pre > -1 && text.substring(pre).toUpperCase().startsWith("<OPTION")) {
                     end = pre - 1;
                     isCombo = true;
                 }
@@ -99,7 +99,7 @@ public class JspPipeConverter {
             // Testa se é uma combo seguinda de </option> para omitir. 
             if (isCombo) {
                 int posCombo = text.indexOf("<", from);
-                if (text.substring(posCombo).toUpperCase().startsWith("</OPTION")) {
+                if (posCombo > -1 && text.substring(posCombo).toUpperCase().startsWith("</OPTION")) {
                     from = text.indexOf(">", posCombo) + 1;
                 }
             }

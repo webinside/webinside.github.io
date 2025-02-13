@@ -33,7 +33,7 @@ import br.com.webinside.runtime.util.WIMap;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class CoreListElement extends CoreCommon {
     /** DOCUMENT ME! */
@@ -62,12 +62,12 @@ public class CoreListElement extends CoreCommon {
         String dbalias = list.getDatabase();
         DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
         if ((db == null) || (!db.isConnected())) {
-            EngFunction.databaseError(wiParams, dbalias);
+            RtmFunction.databaseError(wiParams, dbalias);
             return;
         }
         ProducerParam prod = new ProducerParam();
         prod.setWIMap(wiMap);
-        db.setCharFilter(EngFunction.cleanSpace(list.getSqlFilter()), "");
+        db.setCharFilter(RtmFunction.cleanSpace(list.getSqlFilter()), "");
         long ini = new Date().getTime();
         Exception exrs = null;
         ResultSet rs = null;
@@ -137,7 +137,7 @@ public class CoreListElement extends CoreCommon {
 				}
 			}
         } else {
-        	EngFunction.invalidateTransaction(wiMap, db.getErrorMessage());
+        	RtmFunction.invalidateTransaction(wiMap, db.getErrorMessage());
         	queryException(exrs, db, list.getDescription());
         }
         writeLog();

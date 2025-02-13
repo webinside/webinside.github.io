@@ -35,7 +35,7 @@ import br.com.webinside.runtime.util.WISession;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class CoreCombo extends CoreCommon {
     private ComboRef comboref;
@@ -79,10 +79,10 @@ public class CoreCombo extends CoreCommon {
         String dbalias = combo.getDatabase();
         DatabaseHandler db = wiParams.getDatabaseAliases().get(dbalias);
         if ((db == null) || (!db.isConnected())) {
-            EngFunction.databaseError(wiParams, dbalias);
+            RtmFunction.databaseError(wiParams, dbalias);
             return;
         }
-        db.setCharFilter(EngFunction.cleanSpace(combo.getSqlFilter()), "");
+        db.setCharFilter(RtmFunction.cleanSpace(combo.getSqlFilter()), "");
         long ini = new Date().getTime();
         Exception exrs = null;
         ResultSet rs = null;

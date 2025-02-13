@@ -22,35 +22,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.TagSupport;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import br.com.webinside.runtime.core.ExecuteParams;
 import br.com.webinside.runtime.integration.Producer;
-import br.com.webinside.runtime.util.Function;
 import br.com.webinside.runtime.util.WIMap;
-import br.com.webinside.runtime.util.WISession;
 
 /**
  * Classe que implementa um TagLib para a função Script ou Style.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.6 $
  */
 public abstract class ScriptOrStyle extends TagSupport {
 
 	private static final long serialVersionUID = 1L;
 	
-	public static final String WI_LIST_KEY = "wiScriptOrStyleList";
-	public static final String WI_RND_KEY = "wiScriptOrStyleRnd";
+	public static final String WI_REQ_LIST_KEY = "wiScriptOrStyleReqList";
 	
 	protected String type;
 	private String path;
 	private String media;
 	private String useParent;
-	private boolean rnd;
+	private boolean rnd = true;
 	
     /**
      * Carrega um script caso ele exista e ainda não tenha sido carregado.
@@ -60,15 +59,17 @@ public abstract class ScriptOrStyle extends TagSupport {
      * @throws JspException em caso de uma exceção jsp.
      */
     public int doStartTag() throws JspException {
-    	ServletRequest req = pageContext.getRequest(); 
+    	HttpServletRequest req = (HttpServletRequest) pageContext.getRequest(); 
+    	String sId = req.getSession(false).getId();
         Object obj = req.getAttribute("wiParams");
         if (obj instanceof ExecuteParams) {
             ExecuteParams wiParams = (ExecuteParams) obj;
             try {
-            	List<String> list = (List) req.getAttribute(WI_LIST_KEY);
+            	boolean emptyPath = (path == null);
+            	List<String> list = (List) req.getAttribute(WI_REQ_LIST_KEY);
             	if (list == null) {
             		list = new ArrayList<String>();
-            		req.setAttribute(WI_LIST_KEY, list);
+            		req.setAttribute(WI_REQ_LIST_KEY, list);
             	}
             	if (path == null) {
             		path = "/|wi.proj.id|/|wi.page.id|.js";
@@ -83,22 +84,29 @@ public abstract class ScriptOrStyle extends TagSupport {
                 		}
             		}
             	}
+            	long fileTime = 0;
             	WIMap wiMap = wiParams.getWIMap();
         		path = Producer.execute(wiMap, path).trim();
             	boolean ok = true;
-            	if (!path.startsWith("http:")) {
+            	if (!path.startsWith("http")) {
             		if (!path.startsWith("/")) {
             			path = "/" + wiMap.get("wi.proj.id") + "/"  + path;
             		}
             		ServletContext sc = pageContext.getServletContext(); 
             		String webapps = new File(sc.getRealPath("")).getParent();
-            		if (!new File(webapps, path).isFile()) ok = false;
+            		File file = new File(webapps, path); 
+            		fileTime = file.lastModified();
+            		if (fileTime == 0 && emptyPath) ok = false;
             	}
             	if (list.contains(path)) ok = false;
             	if (ok) {
             		list.add(path);
             		JspWriter pw = pageContext.getOut();
-            		if (rnd) path += "?rnd=" + getRND(wiParams);
+            		if (rnd) {
+            	    	String rnd = DigestUtils.md5Hex((fileTime + "").getBytes());
+            			if (fileTime == 0) rnd = sId;
+            			path += "?rnd=" + rnd.toLowerCase().substring(0, 10);
+            		}
             		if (type.equals("script")) {
             			pw.print("<script type='text/javascript'"); 
             			pw.print(" src='" + path + "'>//</script>");
@@ -119,25 +127,12 @@ public abstract class ScriptOrStyle extends TagSupport {
         return SKIP_BODY;
     }
     
-    private String getRND(ExecuteParams wiParams) {
-		String rnd = null;
-		WISession session = wiParams.getWISession();
-		synchronized (session.getHttpSession()) {
-			rnd = (String) session.getAttribute(WI_RND_KEY);
-			if (rnd == null) {
-				rnd = Function.randomKey(10);
-				session.setAttribute(WI_RND_KEY, rnd);
-			}
-		}
-    	return rnd;
-    }
-    
     private void reset() {
     	type = null;
 		path = null;
 		media = null;
 	    useParent = null;
-	    rnd = false;
+	    rnd = true;
     }
 
 	public String getPath() {

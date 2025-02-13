@@ -24,11 +24,13 @@ import java.io.Serializable;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public abstract class AbstractActionElement implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	
+	public boolean useValidation = false;
 
 	/**
      * DOCUMENT ME!

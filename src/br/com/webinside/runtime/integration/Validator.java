@@ -1,5 +1,6 @@
 package br.com.webinside.runtime.integration;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -79,19 +80,20 @@ public class Validator {
         	String valClass = aliases.getProperty(valName.toLowerCase());
         	if (valClass == null) valClass = "";
 	        if (!valClass.equals("")) {
-				List<String> argsList = 
-					IntFunction.tokenizer(args, ",", true);
+				List<String> argsList = new ArrayList<String>();
+				if (!args.trim().equals("")) {
+					argsList = IntFunction.tokenizer(args, ",", true);
+				}
 				Class cls = null;
 				try {
-					ClassLoader classLoader = 
-						ExecuteParams.getThreadClassLoader();
+					ClassLoader classLoader = ExecuteParams.get().getClassLoader();
 			    	if (classLoader == null) {
 			    		String msg = "ExecuteParams.getThreadClassLoader()";
 			    		throw new NullPointerException(msg);
 			    	}
 					cls = classLoader.loadClass(valClass);
 		            InterfaceValidation intVal = 
-		            	(InterfaceValidation) cls.newInstance();
+		            	(InterfaceValidation) cls.getConstructor().newInstance();
 		            String[] argsArray =
 		                (String[]) argsList.toArray(new String[argsList.size()]);
 		            String msg = intVal.execute(wiParams, var, argsArray);

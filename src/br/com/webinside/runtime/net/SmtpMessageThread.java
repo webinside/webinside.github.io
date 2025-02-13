@@ -31,9 +31,11 @@ import br.com.webinside.runtime.util.StringA;
  * DOCUMENT ME!
  *
  * @author $author$
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SmtpMessageThread extends Thread {
+	
+	public static boolean verifyFolder = true;
     private static final int retries = 6;
     private static final int waitminutes = 30; // minutes
 	private static boolean smtpStart = true;
@@ -44,9 +46,15 @@ public class SmtpMessageThread extends Thread {
      * DOCUMENT ME!
      */
     public static synchronized void execute(String projId) {
-        if (smtpStart) {
-        	smtpStart = false;
-            new SmtpMessageThread(projId).start();
+        if (smtpStart != true) return;
+    	if (verifyFolder) {
+    		verifyFolder = false;    		
+            String tmpdir = Function.tmpDir();
+            String[] lista = Function.listDir(tmpdir, "smtp-*.tmp", false);
+            if (lista.length > 0) {
+             	smtpStart = false;
+                new SmtpMessageThread(projId).start();
+            }
         }
     }
 
@@ -103,6 +111,7 @@ public class SmtpMessageThread extends Thread {
             }
         } catch (Exception err) {
         	smtpStart = true;
+        	verifyFolder = true;
         }
     }
 

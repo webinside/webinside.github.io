@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.Map;
 
 import br.com.webinside.runtime.core.ExecuteParams;
+import br.com.webinside.runtime.database.impl.ConnectionSql;
 import br.com.webinside.runtime.util.ErrorLog;
 import br.com.webinside.runtime.util.WIMap;
 
@@ -458,6 +459,19 @@ public abstract class DatabaseConnection {
      */
     public boolean usePreparedStatement() {
         return DatabaseDrivers.usePreparedStatement(getType());
+    }
+    
+    public boolean isIntersys() {
+    	if (this instanceof ConnectionSql) {
+    		ConnectionSql csql = (ConnectionSql)this;
+    		if (csql.getConnection() != null) {
+    			try {
+    				String dname = csql.getConnection().getMetaData().getDriverName();
+    				if (dname != null && dname.toLowerCase().startsWith("intersystems")) return true;
+				} catch (Exception e) { }
+    		}
+    	}
+    	return false;
     }
 
 	public boolean isValid() {

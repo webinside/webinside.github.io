@@ -25,14 +25,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
-import br.com.webinside.runtime.core.EngFunction;
+import br.com.webinside.runtime.core.RtmFunction;
 import br.com.webinside.runtime.util.Function;
 
 /**
  * Classe que precompila os JSPs do projeto.
  *
  * @author Geraldo Moraes
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class PreCompile extends TagSupport {
 
@@ -59,14 +59,14 @@ public class PreCompile extends TagSupport {
             String file = "/" + prjId + "/" + files[i];
             HttpServletRequest req =
                 (HttpServletRequest) pageContext.getRequest();
-            int port = EngFunction.getServerPort(req);
+            int port = RtmFunction.getServerPort(req);
             String host = "localhost:" + port;
             String prot = "http://";
             if (port == 443) {
                 prot = "https://";
             }
             String url = prot + host + file + "?jsp_precompile=true";
-            int code = EngFunction.callUrl(url);
+            int code = RtmFunction.callUrl(url);
             String msg = (i + 1) + "/" + files.length;
             while (msg.length() < (((files.length + "").length() * 2) + 1)) {
                 msg = "0" + msg;

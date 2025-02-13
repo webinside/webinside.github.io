@@ -25,12 +25,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.tidy.Tidy;
+import org.xhtmlrenderer.extend.ReplacedElementFactory;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import org.xml.sax.InputSource;
 
-import br.com.webinside.runtime.core.EngFunction;
+import br.com.webinside.runtime.core.RtmFunction;
 import br.com.webinside.runtime.core.ExecuteParams;
-import br.com.webinside.runtime.core.Export;
+import br.com.webinside.runtime.core.RtmExport;
 import br.com.webinside.runtime.util.Function;
 import br.com.webinside.runtime.util.WIMap;
 
@@ -45,6 +46,8 @@ public class HtmlToPdfCore {
         Document doc = getDocument(url);
         makeBookmarks(doc);
 	    ITextRenderer renderer = getRenderer(params.getWIMap());
+	    ReplacedElementFactory ref = renderer.getSharedContext().getReplacedElementFactory();
+	    renderer.getSharedContext().setReplacedElementFactory(new HtmlToPdfReplaceImg(ref));
 		renderer.setDocument(doc, url);
 		renderer.layout();
 		renderer.createPDF(fos);
@@ -55,19 +58,20 @@ public class HtmlToPdfCore {
 	public static void exportPdf(ExecuteParams params, File pdf, String name)
 	throws Exception {
 		HttpServletResponse response = params.getHttpResponse();
-		response.setContentType("application/octetstream");
-		String dispname = "attachment; filename=\"" + name;
+		response.setContentType("application/pdf");
+		String dispname = "attachment; filename=\"" + name + "\"";
 		response.setHeader("Content-disposition", dispname);
 		response.setContentLength((int) pdf.length());
 		try {
 			response.flushBuffer();
 		} catch (IOException err) {}  
-		new Export(params).sendFile(params.getWIMap(), pdf.getAbsolutePath(), false);
+		new RtmExport(params).sendFile(params.getWIMap(), pdf.getAbsolutePath(), false);
 	}
 	
 	public static String getURL(ExecuteParams params, String page) {
 		if (page.startsWith("http")) return page;
-        int port = EngFunction.getServerPort(params.getHttpRequest());
+        int port = RtmFunction.getServerPort(params.getHttpRequest());
+        if (port == 443) port = 80; // provisorio para evitar erro do kapersky
         String prot = (port == 443) ? "https://" : "http://";
         String host = params.getWIMap().get("wi.server.host");
         if (host.equals("")) host = "localhost";
